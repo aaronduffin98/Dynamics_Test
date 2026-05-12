@@ -29,27 +29,36 @@ function allocateStudentId(existingStudents) {
   return `STU-${String(max + 1).padStart(5, "0")}`;
 }
 
-function FormRow({ label, required, error, children, alignTop }) {
+function FormRow({ label, required, error, children }) {
   return (
-    <div className={`mda-field-row ${alignTop ? "mda-field-row--top" : ""} ${error ? "mda-field-row--error" : ""}`}>
-      <label className="mda-field-label">
+    <div className={`mda-field ${error ? "mda-field--error" : ""}`}>
+      <label className="mda-field__label">
         {label}
         {required ? (
-          <span className="mda-field-req" aria-hidden="true">
+          <span className="mda-field__req" aria-hidden="true">
             {" "}
             *
           </span>
         ) : null}
       </label>
-      <div className="mda-field-control">
+      <div className="mda-field__control">
         {children}
         {error ? (
-          <span className="mda-field-error" role="alert">
+          <span className="mda-field__error" role="alert">
             {error}
           </span>
         ) : null}
       </div>
     </div>
+  );
+}
+
+function FieldBox({ title, children }) {
+  return (
+    <section className="mda-field-box">
+      <header className="mda-field-box__header">{title}</header>
+      <div className="mda-field-box__fields">{children}</div>
+    </section>
   );
 }
 
@@ -241,8 +250,11 @@ export default function UniversityApplicationForm({ existingStudents, onSubmit, 
 
           <div className="mda-record-workspace">
             <form id="uni-app-record-form" className="mda-record-form" onSubmit={handleSubmit} noValidate>
-              <div className="mda-record-card">
+              <section className="mda-record-card mda-record-card--form" aria-labelledby="mda-form-card-title">
                 <header className="mda-record-header">
+                  <h2 id="mda-form-card-title" className="mda-record-header__title">
+                    New Student
+                  </h2>
                   <div className="mda-record-header__row">
                     <span className="mda-record-header__id">{previewId}</span>
                     <span className="mda-record-header__divider-dot" aria-hidden="true">
@@ -269,6 +281,15 @@ export default function UniversityApplicationForm({ existingStudents, onSubmit, 
                   <button
                     type="button"
                     role="tab"
+                    aria-selected={activeTab === "timeline"}
+                    className={`mda-tab ${activeTab === "timeline" ? "mda-tab--active" : ""}`}
+                    onClick={() => setActiveTab("timeline")}
+                  >
+                    Timeline
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
                     aria-selected={activeTab === "related"}
                     className={`mda-tab ${activeTab === "related" ? "mda-tab--active" : ""}`}
                     onClick={() => setActiveTab("related")}
@@ -278,97 +299,92 @@ export default function UniversityApplicationForm({ existingStudents, onSubmit, 
                 </div>
 
                 {activeTab === "general" ? (
-                  <div className="mda-form-layout">
-                    <div className="mda-form-columns">
-                      <div className="mda-form-col">
-                        <FormRow label="First name" required error={validationMessage.firstName}>
-                          <FluentInput
-                            value={firstName}
-                            onChange={(_, d) => setFirstName(d.value)}
-                            placeholder="Required"
-                            className="mda-input"
-                          />
-                        </FormRow>
-                        <FormRow label="Last name" required error={validationMessage.lastName}>
-                          <FluentInput
-                            value={lastName}
-                            onChange={(_, d) => setLastName(d.value)}
-                            placeholder="Required"
-                            className="mda-input"
-                          />
-                        </FormRow>
-                        <FormRow label="Courses" required error={validationMessage.courses} alignTop>
-                          <div className="mda-checkbox-stack" role="group" aria-label="Courses">
-                            {mockCourses.map((c) => (
-                              <FluentCheckbox
-                                key={c.courseId}
-                                checked={selectedCourses.has(c.courseId)}
-                                onChange={(_, data) => toggleCourse(c.courseId, Boolean(data.checked))}
-                                label={`${c.courseId} — ${c.courseName}`}
-                              />
-                            ))}
-                          </div>
-                        </FormRow>
-                      </div>
-                      <div className="mda-form-col">
-                        <FormRow label="Email" required error={validationMessage.email}>
-                          <FluentInput
-                            type="email"
-                            value={email}
-                            onChange={(_, d) => setEmail(d.value)}
-                            placeholder="name@example.edu"
-                            autoComplete="email"
-                            className="mda-input"
-                          />
-                        </FormRow>
-                        <FormRow label="Assigned lecturer" required error={validationMessage.lecturer}>
-                          <select
-                            className="mda-select"
-                            value={lecturerId}
-                            onChange={(e) => setLecturerId(e.target.value)}
-                            aria-required="true"
-                          >
-                            <option value="">Select…</option>
-                            {mockLecturers.map((l) => (
-                              <option key={l.lecturerId} value={l.lecturerId}>
-                                {l.name}
-                              </option>
-                            ))}
-                          </select>
-                        </FormRow>
+                  <div className="mda-form-columns">
+                    <FieldBox title="Personal Information">
+                      <FormRow label="First name" required error={validationMessage.firstName}>
+                        <FluentInput
+                          value={firstName}
+                          onChange={(_, d) => setFirstName(d.value)}
+                          placeholder="Type here"
+                          className="mda-input"
+                        />
+                      </FormRow>
+                      <FormRow label="Last name" required error={validationMessage.lastName}>
+                        <FluentInput
+                          value={lastName}
+                          onChange={(_, d) => setLastName(d.value)}
+                          placeholder="Type here"
+                          className="mda-input"
+                        />
+                      </FormRow>
+                      <FormRow label="Email" required error={validationMessage.email}>
+                        <FluentInput
+                          type="email"
+                          value={email}
+                          onChange={(_, d) => setEmail(d.value)}
+                          placeholder="name@example.edu"
+                          autoComplete="email"
+                          className="mda-input"
+                        />
+                      </FormRow>
+                    </FieldBox>
+
+                    <FieldBox title="Enrollment">
+                      <FormRow label="Assigned lecturer" required error={validationMessage.lecturer}>
+                        <select
+                          className="mda-select"
+                          value={lecturerId}
+                          onChange={(e) => setLecturerId(e.target.value)}
+                          aria-required="true"
+                        >
+                          <option value="">Select…</option>
+                          {mockLecturers.map((l) => (
+                            <option key={l.lecturerId} value={l.lecturerId}>
+                              {l.name}
+                            </option>
+                          ))}
+                        </select>
+                      </FormRow>
+                      <FormRow label="Courses" required error={validationMessage.courses}>
+                        <div className="mda-checkbox-stack" role="group" aria-label="Courses">
+                          {mockCourses.map((c) => (
+                            <FluentCheckbox
+                              key={c.courseId}
+                              checked={selectedCourses.has(c.courseId)}
+                              onChange={(_, data) => toggleCourse(c.courseId, Boolean(data.checked))}
+                              label={`${c.courseId} — ${c.courseName}`}
+                            />
+                          ))}
+                        </div>
+                      </FormRow>
+                    </FieldBox>
+                  </div>
+                ) : activeTab === "timeline" ? (
+                  <div className="mda-timeline-panel" aria-label="Timeline">
+                    <div className="mda-timeline-panel__bar">
+                      <span className="mda-timeline__title">Timeline</span>
+                      <div className="mda-timeline__actions">
+                        <FluentButton appearance="subtle" size="small" disabled title="Preview only">
+                          +
+                        </FluentButton>
+                        <FluentButton appearance="subtle" size="small" disabled title="Preview only">
+                          ⋯
+                        </FluentButton>
                       </div>
                     </div>
-
-                    <aside className="mda-timeline" aria-label="Timeline">
-                      <div className="mda-timeline__header">
-                        <span className="mda-timeline__title">Timeline</span>
-                        <div className="mda-timeline__actions">
-                          <FluentButton appearance="subtle" size="small" disabled title="Preview only">
-                            +
-                          </FluentButton>
-                          <FluentButton appearance="subtle" size="small" disabled title="Preview only">
-                            ⋯
-                          </FluentButton>
-                        </div>
-                      </div>
+                    <div className="mda-timeline-panel__body">
                       <FluentInput
-                        placeholder="Search timeline"
-                        className="mda-timeline__search"
+                        placeholder="Enter a note…"
+                        className="mda-timeline__note-input"
                         disabled
                         appearance="outline"
-                        size="small"
+                        size="medium"
                       />
-                      <textarea
-                        className="mda-timeline__note"
-                        placeholder="Enter a note…"
-                        rows={3}
-                        readOnly
-                        aria-readonly="true"
-                      />
+                      <p className="mda-timeline-panel__group-label">Recent (0)</p>
                       <p className="mda-timeline__empty">
                         Get started. Capture and manage all records in your timeline.
                       </p>
-                    </aside>
+                    </div>
                   </div>
                 ) : (
                   <div className="mda-related-placeholder">
@@ -378,7 +394,7 @@ export default function UniversityApplicationForm({ existingStudents, onSubmit, 
                     </p>
                   </div>
                 )}
-              </div>
+              </section>
             </form>
           </div>
         </main>
