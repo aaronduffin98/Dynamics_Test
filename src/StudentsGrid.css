@@ -18,6 +18,7 @@
 
 /* --- Top purple header (#501650) --- */
 .dynamics-app-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -53,15 +54,21 @@
 }
 
 .dynamics-app-header__divider {
-  width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.35);
+  display: none;
 }
 
 .dynamics-app-header__env {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1;
 }
 
 .dynamics-app-header__actions {
@@ -168,35 +175,36 @@
   flex-shrink: 0;
 }
 
-/* --- Main column — canvas matches model-driven list (#f3f2f1) --- */
+/* --- Main column — canvas behind the surface cards --- */
 .dynamics-main {
   flex: 1;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: #f3f2f1;
+  background: #fafafa;
 }
 
-/* Grey workspace with inset cards (Dynamics screenshot) */
+/* Light grey workspace with inset cards */
 .dynamics-main-surface {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px 20px;
-  background: #f3f2f1;
+  gap: 16px;
+  padding: 16px;
+  background: #fafafa;
   overflow: auto;
 }
 
-/* Shared white “card” shell */
+/* Shared white "card" shell */
 .dynamics-surface-card {
   background: #ffffff;
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.06),
-    0 2px 6px rgba(0, 0, 0, 0.06);
+    0 2px 6px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .dynamics-surface-card--command {
@@ -386,17 +394,62 @@
 
 /* Keeps footer as wide as the grid when horizontal scrolling */
 .dynamics-grid-scroll__inner {
-  display: inline-block;
+  display: block;
+  width: 100%;
   min-width: 100%;
-  vertical-align: top;
 }
 
-/* Primary column — hyperlink */
+/* Fluent DataGrid's underlying table — stretch to fill its scroll container */
+.dynamics-grid-scroll--list .fui-DataGrid {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* Force every row to be full-width and every data column to share width equally.
+   Fluent sets inline pixel widths on each cell when resizableColumns is on, so we
+   override those with !important and rely on flex-grow to distribute remaining space. */
+.dynamics-grid-scroll--list .fui-DataGridHeader,
+.dynamics-grid-scroll--list .fui-DataGridBody {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.dynamics-grid-scroll--list [role="row"] {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.dynamics-grid-scroll--list [role="row"] > [role="columnheader"]:not(.fui-DataGridSelectionCell),
+.dynamics-grid-scroll--list [role="row"] > [role="gridcell"]:not(.fui-DataGridSelectionCell) {
+  flex: 1 1 0 !important;
+  flex-grow: 1 !important;
+  flex-shrink: 1 !important;
+  flex-basis: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  inline-size: auto !important;
+  min-inline-size: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.dynamics-grid-scroll--list [role="row"] > .fui-DataGridSelectionCell {
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  inline-size: 44px !important;
+}
+
+/* Primary column — Dynamics link inside a darker hovered cell */
 .dynamics-grid-link {
   margin: 0;
   padding: 0;
   border: none;
-  background: none;
+  background: transparent;
   font: inherit;
   color: #0078d4;
   cursor: pointer;
@@ -406,6 +459,11 @@
 
 .dynamics-grid-link:hover {
   text-decoration: underline;
+}
+
+.dynamics-grid-link:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
 }
 
 .dynamics-owner-cell {
@@ -421,13 +479,50 @@
   white-space: nowrap;
 }
 
-/* DataGrid: sticky header — white like Dynamics list; horizontal rule only under header row (no vertical lines between headings) */
+/* Courses cell — count chip + truncated course-id list */
+.dynamics-courses-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.dynamics-courses-cell__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #323130;
+  background: #edebe9;
+  border-radius: 10px;
+}
+
+.dynamics-courses-cell__list {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #605e5c;
+}
+
+/* Empty-state placeholder in cells */
+.dynamics-grid-empty {
+  color: #a19f9d;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* DataGrid: sticky header — white like Dynamics list; no horizontal rule under header row */
 .dynamics-grid-scroll--list .fui-DataGridHeader {
   position: sticky;
   top: 0;
   z-index: 3;
   background: #ffffff !important;
-  box-shadow: inset 0 -1px 0 #e0e0e0;
+  box-shadow: none;
 }
 
 .dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell,
@@ -437,13 +532,81 @@
   border-inline-start: none !important;
   border-inline-end: none !important;
   border-block-start: none !important;
-  border-block-end: 1px solid #e0e0e0 !important;
+  border-block-end: none !important;
   box-shadow: none !important;
   font-size: 11px;
   font-weight: 600;
   color: #605e5c;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+/* Hover — individual header cell darkens on pointer, matching body cell hover */
+.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell:hover,
+.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell:focus-within {
+  background: #e1dfdd !important;
+}
+
+/* Custom column header — label + sort indicator + dropdown menu chevron */
+.dynamics-header-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+.dynamics-header-cell__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dynamics-header-cell__sort-icon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  color: #605e5c;
+}
+
+.dynamics-header-cell__menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #605e5c;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 80ms ease-in-out, background-color 80ms ease-in-out;
+}
+
+.dynamics-header-cell__menu-trigger > svg {
+  width: 10px;
+  height: 10px;
+}
+
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell:hover .dynamics-header-cell__menu-trigger,
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell:focus-within .dynamics-header-cell__menu-trigger,
+.dynamics-header-cell__menu-trigger[aria-expanded="true"] {
+  opacity: 1;
+}
+
+.dynamics-header-cell__menu-trigger:hover {
+  background: #d2d0ce;
+}
+
+.dynamics-header-cell__menu-trigger:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
 }
 
 /* Fluent sometimes draws column seams on inner table primitives — strip vertical borders in header row only */
@@ -474,6 +637,12 @@
   background: #f3f2f1 !important;
 }
 
+/* Hover — the individual data cell under the pointer is darker than the row band */
+.dynamics-grid-scroll--list .fui-DataGridBody [role="row"]:not([aria-selected="true"]) .fui-DataGridCell:hover,
+.dynamics-grid-scroll--list .fui-DataGridBody [role="row"]:not([aria-selected="true"]) .fui-DataGridCell:focus-within {
+  background: #e1dfdd !important;
+}
+
 /* Selected row — checkbox selection (neutral band) */
 .dynamics-grid-scroll--list .fui-DataGridBody [role="row"][aria-selected="true"] .fui-DataGridCell,
 .dynamics-grid-scroll--list .fui-DataGridBody [role="row"][aria-selected="true"] .fui-DataGridSelectionCell {
@@ -485,6 +654,11 @@
   background: #e1dfdd !important;
 }
 
+.dynamics-grid-scroll--list .fui-DataGridBody [role="row"][aria-selected="true"] .fui-DataGridCell:hover,
+.dynamics-grid-scroll--list .fui-DataGridBody [role="row"][aria-selected="true"] .fui-DataGridCell:focus-within {
+  background: #d2d0ce !important;
+}
+
 /* Sortable headers — pointer matches Dynamics grid */
 .dynamics-grid-scroll--list .fui-DataGridHeaderCell__button {
   color: #605e5c !important;
@@ -492,12 +666,13 @@
   cursor: pointer;
 }
 
-/* Column resize handles (Fluent TableResizeHandle) — Dynamics-style drag between headers */
+/* Column resize handles (Fluent TableResizeHandle) — invisible at rest, reveal on hover so drag still works */
 .dynamics-grid-scroll--list .fui-TableResizeHandle {
   cursor: col-resize;
-  opacity: 0.65;
+  opacity: 0;
 }
 
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell:hover .fui-TableResizeHandle,
 .dynamics-grid-scroll--list .fui-TableResizeHandle:hover,
 .dynamics-grid-scroll--list .fui-TableResizeHandle:active {
   opacity: 1;
@@ -508,6 +683,14 @@
   align-items: stretch;
 }
 
+/* Hide Fluent's built-in sortable arrow so each header only shows:
+   1) our sort-direction arrow and 2) our dropdown chevron. */
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell .fui-TableHeaderCell__aside svg,
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell [class*="sortIcon"],
+.dynamics-grid-scroll--list .fui-DataGridHeaderCell [class*="SortIcon"] {
+  display: none !important;
+}
+
 /* After last row; sticks to bottom of scroll area while scrolling long lists */
 .dynamics-grid-footer {
   position: sticky;
@@ -516,12 +699,20 @@
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 8px 12px;
   border-top: 1px solid #edebe9;
   background: #faf9f8;
   font-size: 12px;
   color: #605e5c;
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.dynamics-grid-footer__divider {
+  color: #c8c6c4;
+  user-select: none;
 }
 
 /* Status chips */

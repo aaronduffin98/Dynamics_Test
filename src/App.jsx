@@ -72,6 +72,8 @@ export default function App() {
       ) : (
         <StudentsGrid
           students={students}
+          courseLinks={courseLinksByStudent}
+          lecturerLinks={lecturerByStudent}
           onOpenStudent={openStudent}
           onOpenApplication={openApplication}
         />

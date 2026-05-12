@@ -1,260 +1,387 @@
-/* Dynamics-style main form — sections, labels above fields, neutral surfaces */
+/* Student detail (review) — Dynamics MDA record form layout.
+   Reuses the .mda-* chrome (header, sitemap, commandbar, record-card, tabs) from
+   UniversityApplicationForm.css and overrides bits that differ for the detail view:
+   - record header has a big title + right-aligned context fields
+   - form layout is a horizontal label-left grid with a Timeline aside
+*/
 
-.student-detail {
+.mda-detail-record.dynamics-app {
   min-height: 100vh;
+}
+
+/* Title row in the record header — student name + "Saved" status pill */
+.mda-record-header--detail {
   display: flex;
-  flex-direction: column;
-  background: #faf9f8;
-  color: #323130;
-  font-family:
-    "Segoe UI",
-    "Segoe UI Web (West European)",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 14px 20px 8px;
 }
 
-.student-detail__chrome {
-  flex-shrink: 0;
-  background: #ffffff;
-  border-bottom: 1px solid #edebe9;
-}
-
-.student-detail__chrome-inner {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 12px 24px 20px;
-}
-
-.student-detail__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.student-detail__breadcrumb {
-  font-size: 12px;
-  color: #605e5c;
-}
-
-.student-detail__breadcrumb-root {
-  color: #0078d4;
-}
-
-.student-detail__breadcrumb-sep {
-  margin: 0 6px;
-  color: #a19f9d;
-}
-
-.student-detail__breadcrumb-current {
-  color: #323130;
-  font-weight: 600;
-}
-
-.student-detail__title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #323130;
-}
-
-.student-detail__subtitle {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #605e5c;
-}
-
-.student-detail__main {
-  flex: 1;
-  padding: 20px 24px 40px;
-}
-
-.student-detail__form-card {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 20px 24px 28px;
-  background: #ffffff;
-  border: 1px solid #edebe9;
-  border-radius: 2px;
-}
-
-.student-detail__section {
-  padding-top: 4px;
-}
-
-.student-detail__section-heading {
-  margin: 0 0 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #0078d4;
-  display: inline-block;
-  font-size: 14px;
-  font-weight: 700;
-  color: #323130;
-}
-
-.student-detail__fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px 24px;
-  align-items: start;
-}
-
-.student-detail__field-span-2 {
-  grid-column: 1 / -1;
-}
-
-.student-detail__owner-field {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.student-detail__owner-input {
-  flex: 1;
+.mda-record-header__main {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.student-detail .fui-Input {
-  font-size: 14px;
-}
-
-.student-detail .fui-Field__label {
-  font-weight: 600;
-  font-size: 12px;
-  color: #323130;
-}
-
-/* --- Related entity sub-grids (Dynamics-style sublists) --- */
-.student-detail__related-wrap {
-  max-width: 960px;
-  margin: 24px auto 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.student-detail__subgrid {
-  background: #ffffff;
-  border: 1px solid #edebe9;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.student-detail__subgrid__chrome {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 8px 12px;
-  background: #faf9f8;
-  border-bottom: 1px solid #edebe9;
-}
-
-.student-detail__subgrid__title-row {
+.mda-record-header__title-row {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.mda-record-header__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #323130;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mda-record-header__saved {
+  font-size: 12px;
+  font-weight: 600;
+  color: #107c10;
+  background: #dff6dd;
+  padding: 1px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* Right-aligned contextual fields (Status / Owner / Lecturer) */
+.mda-record-header__context {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.mda-record-header__context-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-.student-detail__subgrid__title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
+.mda-record-header__context-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: #605e5c;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.mda-record-header__context-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #323130;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mda-record-header__context-value--avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mda-record-header__context-text {
+  font-size: 13px;
+  font-weight: 600;
   color: #323130;
 }
 
-.student-detail__subgrid__count {
-  font-size: 12px;
-  color: #605e5c;
+@media (max-width: 1100px) {
+  .mda-record-header--detail {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .mda-record-header__context {
+    flex-wrap: wrap;
+    gap: 16px 24px;
+  }
 }
 
-.student-detail__subgrid__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* Tabs row — add space for the "Form assist" link on the right */
+.mda-tabs__spacer {
+  flex: 1 1 auto;
 }
 
-.student-detail__subgrid__body {
-  overflow-x: auto;
-  background: #ffffff;
-}
-
-.student-detail__subgrid__empty {
-  margin: 0;
-  padding: 16px 12px;
-  font-size: 12px;
-  color: #605e5c;
-}
-
-.student-detail__related-table {
-  width: 100%;
-  min-width: 640px;
-}
-
-.student-detail__related-table [role="columnheader"],
-.student-detail__related-table thead th {
-  font-size: 11px;
-  font-weight: 600;
-  color: #605e5c;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  background: #faf9f8 !important;
-  border-bottom: 1px solid #edebe9 !important;
-}
-
-.student-detail__related-table [role="row"] [role="gridcell"],
-.student-detail__related-table tbody td {
-  font-size: 12px;
-  border-bottom: 1px solid #edebe9 !important;
-  border-inline: none !important;
-}
-
-.student-detail__related-table [role="row"]:hover [role="gridcell"],
-.student-detail__related-table tbody tr:hover td {
-  background: #f3f2f1 !important;
-}
-
-.student-detail__subgrid-row--selected [role="gridcell"],
-.student-detail__subgrid-row--selected td {
-  background: #edebe9 !important;
-}
-
-.student-detail__subgrid-link {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  color: #0078d4;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.student-detail__subgrid-link:hover {
-  text-decoration: underline;
-}
-
-.student-detail__subgrid__actions {
+.mda-tab__inner {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
 }
 
-.student-detail__subgrid-hint {
+.mda-tabs__assist {
+  align-self: center;
+  margin-right: 8px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0078d4;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.mda-tabs__assist:not(:disabled):hover {
+  background: #f3f2f1;
+}
+
+.mda-tabs__assist:disabled {
+  cursor: default;
+}
+
+.mda-commandbar__flow-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Workspace layout — form card on the left, Timeline card on the right (equal halves, equal height) */
+.mda-detail-record-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 16px;
+}
+
+.mda-detail-record-grid > .mda-record-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  margin-top: 0;
+}
+
+@media (max-width: 1200px) {
+  .mda-detail-record-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mda-detail-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 32px;
+  row-gap: 14px;
+  padding: 18px 20px 24px;
+  align-items: start;
+}
+
+@media (max-width: 780px) {
+  .mda-detail-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Horizontal label-left field row (Dynamics MDA detail-form pattern) */
+.mda-detail-row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.mda-detail-row--top {
+  align-items: start;
+}
+
+.mda-detail-row--top .mda-detail-row__label {
+  padding-top: 6px;
+}
+
+.mda-detail-row__label {
+  font-size: 13px;
+  font-weight: 400;
+  color: #323130;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mda-detail-row__req {
+  color: #a4262c;
+}
+
+.mda-detail-row__control {
+  min-width: 0;
+}
+
+.mda-detail-row__owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mda-detail-row__owner-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Read-only input field — match the Plan Field Box filled-grey aesthetic */
+.mda-detail-record .mda-detail-row__control .fui-Input {
+  background-color: #f5f5f5;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  min-height: 28px;
+  height: 28px;
+  font-size: 13px;
+  color: #323130;
+  width: 100%;
+}
+
+.mda-detail-record .mda-detail-row__control .fui-Input::after {
+  border-bottom: none;
+}
+
+.mda-detail-record .mda-detail-row__control .fui-Input:hover {
+  background-color: #ececec;
+  border-color: transparent;
+}
+
+.mda-detail-record .mda-detail-row__control .fui-Input input {
+  padding: 0 12px;
+  font-size: 13px;
+  color: #323130;
+}
+
+/* Timeline card — sibling card to the form, not joined to it */
+.mda-record-card--timeline {
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  .mda-record-card--timeline {
+    min-height: 320px;
+  }
+}
+
+.mda-timeline-aside__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #edebe9;
+  background: #ffffff;
+}
+
+.mda-timeline-aside__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #323130;
+}
+
+.mda-timeline-aside__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mda-timeline-aside__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   margin: 0;
-  padding: 8px 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #605e5c;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mda-timeline-aside__icon-btn:hover {
+  background: #f3f2f1;
+}
+
+.mda-timeline-aside__icon-btn > svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mda-timeline-aside__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: 12px 12px 16px;
+  gap: 16px;
+}
+
+.mda-timeline-aside__note.fui-Input {
+  width: 100%;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.mda-timeline-aside__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: auto;
+  padding: 24px 16px;
+  gap: 8px;
+  max-width: 280px;
+}
+
+.mda-timeline-aside__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f3f2f1;
+  color: #605e5c;
+  margin-bottom: 4px;
+}
+
+.mda-timeline-aside__empty-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #323130;
+}
+
+.mda-timeline-aside__empty-text {
+  margin: 0;
   font-size: 12px;
   color: #605e5c;
-  background: #f3f2f1;
-  border: 1px solid #edebe9;
-  border-radius: 2px;
+  line-height: 1.45;
+}
+
+.mda-timeline-aside__empty-meta {
+  margin: 0;
+  font-size: 11px;
+  color: #a19f9d;
+}
+
+/* Related tab — container for the existing related subgrids component */
+.mda-detail-related {
+  padding: 12px 16px 24px;
+  background: #faf9f8;
+}
+
+.mda-detail-related .student-detail__related-wrap {
+  margin-top: 0;
+  max-width: none;
 }

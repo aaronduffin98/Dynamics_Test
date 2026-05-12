@@ -9,14 +9,25 @@ import {
   DataGridHeaderCell,
   DataGridRow,
   Input,
+  Menu,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
   TableCellLayout,
   createTableColumn,
 } from "@fluentui/react-components";
 import {
   AddRegular,
+  ArrowAutofitWidthRegular,
   ArrowClockwiseRegular,
+  ArrowDownRegular,
   ArrowExportRegular,
   ArrowImportRegular,
+  ArrowLeftRegular,
+  ArrowRightRegular,
+  ArrowUpRegular,
   BookContactsRegular,
   ChevronDownRegular,
   ColumnTripleEditRegular,
@@ -28,6 +39,7 @@ import {
   FilterRegular,
   FlowRegular,
   GridRegular,
+  GroupListRegular,
   LinkRegular,
   PeopleRegular,
   SearchRegular,
@@ -35,6 +47,12 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
+import {
+  getAssignedLecturer,
+  getCoursesForStudent,
+  studentCourseLinks,
+  studentLecturerLink,
+} from "./mockRelated.js";
 import "./StudentsGrid.css";
 
 const dateFmt = new Intl.DateTimeFormat(undefined, {
@@ -60,30 +78,172 @@ function OwnerCell({ name }) {
   );
 }
 
-export default function StudentsGrid({ students, onOpenStudent, onOpenApplication }) {
+function LecturerCell({ name }) {
+  if (!name) {
+    return <span className="dynamics-grid-empty">—</span>;
+  }
+  return (
+    <span className="dynamics-owner-cell">
+      <Avatar name={name} size={24} color="colorful" />
+      <span className="dynamics-owner-cell__name">{name}</span>
+    </span>
+  );
+}
+
+function CoursesCell({ courses }) {
+  if (!courses || courses.length === 0) {
+    return <span className="dynamics-grid-empty">No courses</span>;
+  }
+  const label = courses.map((c) => c.courseId).join(", ");
+  const tooltip = courses.map((c) => `${c.courseId} — ${c.courseName}`).join("\n");
+  return (
+    <span className="dynamics-courses-cell" title={tooltip}>
+      <span className="dynamics-courses-cell__count">{courses.length}</span>
+      <span className="dynamics-courses-cell__list">{label}</span>
+    </span>
+  );
+}
+
+/** Dynamics-style column header — label + sort indicator + ⌄ menu (Sort / Group / Filter / Move) */
+function HeaderMenu({ columnId, label, sortState, onSort, onMockCommand }) {
+  const isActive = sortState?.sortColumn === columnId;
+  const direction = isActive ? sortState.sortDirection : null;
+  const swallow = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  return (
+    <span className="dynamics-header-cell">
+      <span className="dynamics-header-cell__label" title={label}>
+        {label}
+      </span>
+      {direction === "ascending" ? (
+        <ArrowUpRegular
+          className="dynamics-header-cell__sort-icon"
+          fontSize={12}
+          aria-hidden="true"
+        />
+      ) : direction === "descending" ? (
+        <ArrowDownRegular
+          className="dynamics-header-cell__sort-icon"
+          fontSize={12}
+          aria-hidden="true"
+        />
+      ) : null}
+      <Menu positioning="below-end">
+        <MenuTrigger disableButtonEnhancement>
+          <button
+            type="button"
+            className="dynamics-header-cell__menu-trigger"
+            aria-label={`${label} column options`}
+            onClick={swallow}
+            onMouseDown={swallow}
+            onPointerDown={swallow}
+          >
+            <ChevronDownRegular fontSize={10} />
+          </button>
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>
+            <MenuItem
+              icon={<ArrowUpRegular />}
+              onClick={() => onSort(columnId, "ascending")}
+            >
+              A to Z
+            </MenuItem>
+            <MenuItem
+              icon={<ArrowDownRegular />}
+              onClick={() => onSort(columnId, "descending")}
+            >
+              Z to A
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem icon={<GroupListRegular />} onClick={onMockCommand}>
+              Group by
+            </MenuItem>
+            <MenuItem icon={<FilterRegular />} onClick={onMockCommand}>
+              Filter by
+            </MenuItem>
+            <MenuItem icon={<ArrowAutofitWidthRegular />} onClick={onMockCommand}>
+              Column width
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem icon={<ArrowLeftRegular />} onClick={onMockCommand}>
+              Move left
+            </MenuItem>
+            <MenuItem icon={<ArrowRightRegular />} onClick={onMockCommand}>
+              Move right
+            </MenuItem>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
+    </span>
+  );
+}
+
+export default function StudentsGrid({
+  students,
+  courseLinks = studentCourseLinks,
+  lecturerLinks = studentLecturerLink,
+  onOpenStudent,
+  onOpenApplication,
+}) {
   const [filter, setFilter] = useState("");
+  const [sortState, setSortState] = useState({
+    sortColumn: "createdOn",
+    sortDirection: "descending",
+  });
+  /** Controlled selection so the footer can show "N selected" */
+  const [selectedRows, setSelectedRows] = useState(() => new Set());
 
   /** Mock command bar — delete / refresh stay inert for the prototype */
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
   }, []);
 
+  const handleColumnSort = useCallback((columnId, direction) => {
+    setSortState({ sortColumn: columnId, sortDirection: direction });
+  }, []);
+
+  /** Pre-compute lecturer + courses per row so sorting/filtering can use string values directly */
+  const enrichedStudents = useMemo(() => {
+    return students.map((s) => {
+      const lecturer = getAssignedLecturer(s.studentId, lecturerLinks);
+      const courses = getCoursesForStudent(s.studentId, courseLinks);
+      return {
+        ...s,
+        lecturerName: lecturer?.name ?? "",
+        courses,
+        coursesLabel: courses.map((c) => c.courseId).join(", "),
+      };
+    });
+  }, [students, courseLinks, lecturerLinks]);
+
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((row) =>
-      [row.studentId, row.fullName, row.email, row.status, row.ownerName].some((v) =>
-        String(v).toLowerCase().includes(q)
+    if (!q) return enrichedStudents;
+    return enrichedStudents.filter((row) =>
+      [row.studentId, row.fullName, row.email, row.status, row.ownerName, row.lecturerName, row.coursesLabel].some(
+        (v) => String(v).toLowerCase().includes(q)
       )
     );
-  }, [filter, students]);
+  }, [filter, enrichedStudents]);
 
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const headerOf = (columnId, label) => (
+      <HeaderMenu
+        columnId={columnId}
+        label={label}
+        sortState={sortState}
+        onSort={handleColumnSort}
+        onMockCommand={onMockCommand}
+      />
+    );
+    return [
       createTableColumn({
         columnId: "studentId",
         compare: (a, b) => a.studentId.localeCompare(b.studentId),
-        renderHeaderCell: () => "Student ID",
+        renderHeaderCell: () => headerOf("studentId", "Student ID"),
         renderCell: (item) => (
           <button
             type="button"
@@ -101,7 +261,7 @@ export default function StudentsGrid({ students, onOpenStudent, onOpenApplicatio
       createTableColumn({
         columnId: "fullName",
         compare: (a, b) => a.fullName.localeCompare(b.fullName),
-        renderHeaderCell: () => "Name",
+        renderHeaderCell: () => headerOf("fullName", "Name"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.fullName}>
             {item.fullName}
@@ -111,7 +271,7 @@ export default function StudentsGrid({ students, onOpenStudent, onOpenApplicatio
       createTableColumn({
         columnId: "email",
         compare: (a, b) => a.email.localeCompare(b.email),
-        renderHeaderCell: () => "Email",
+        renderHeaderCell: () => headerOf("email", "Email"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.email}>
             {item.email}
@@ -121,34 +281,47 @@ export default function StudentsGrid({ students, onOpenStudent, onOpenApplicatio
       createTableColumn({
         columnId: "status",
         compare: (a, b) => a.status.localeCompare(b.status),
-        renderHeaderCell: () => "Status",
+        renderHeaderCell: () => headerOf("status", "Status"),
         renderCell: (item) => <StatusCell status={item.status} />,
+      }),
+      createTableColumn({
+        columnId: "lecturerName",
+        compare: (a, b) => a.lecturerName.localeCompare(b.lecturerName),
+        renderHeaderCell: () => headerOf("lecturerName", "Lecturer"),
+        renderCell: (item) => <LecturerCell name={item.lecturerName} />,
+      }),
+      createTableColumn({
+        columnId: "courses",
+        compare: (a, b) => a.courses.length - b.courses.length,
+        renderHeaderCell: () => headerOf("courses", "Courses"),
+        renderCell: (item) => <CoursesCell courses={item.courses} />,
       }),
       createTableColumn({
         columnId: "ownerName",
         compare: (a, b) => a.ownerName.localeCompare(b.ownerName),
-        renderHeaderCell: () => "Owner",
+        renderHeaderCell: () => headerOf("ownerName", "Owner"),
         renderCell: (item) => <OwnerCell name={item.ownerName} />,
       }),
       createTableColumn({
         columnId: "createdOn",
         compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => "Created On",
+        renderHeaderCell: () => headerOf("createdOn", "Created On"),
         renderCell: (item) => dateFmt.format(item.createdOn),
       }),
-    ],
-    [onOpenStudent]
-  );
+    ];
+  }, [sortState, handleColumnSort, onMockCommand, onOpenStudent]);
 
-  /** Default widths + mins — Fluent applies drag resize via `TableResizeHandle` in header cells */
+  /** Equal default widths — real equal distribution is enforced by CSS flex on the row */
   const columnSizingOptions = useMemo(
     () => ({
-      studentId: { defaultWidth: 112, minWidth: 72 },
-      fullName: { defaultWidth: 156, minWidth: 96 },
-      email: { defaultWidth: 228, minWidth: 140 },
-      status: { defaultWidth: 104, minWidth: 80 },
-      ownerName: { defaultWidth: 176, minWidth: 120 },
-      createdOn: { defaultWidth: 168, minWidth: 128 },
+      studentId: { defaultWidth: 160, minWidth: 80 },
+      fullName: { defaultWidth: 160, minWidth: 80 },
+      email: { defaultWidth: 160, minWidth: 80 },
+      status: { defaultWidth: 160, minWidth: 80 },
+      lecturerName: { defaultWidth: 160, minWidth: 80 },
+      courses: { defaultWidth: 160, minWidth: 80 },
+      ownerName: { defaultWidth: 160, minWidth: 80 },
+      createdOn: { defaultWidth: 160, minWidth: 80 },
     }),
     []
   );
@@ -342,13 +515,16 @@ export default function StudentsGrid({ students, onOpenStudent, onOpenApplicatio
                         items={filteredItems}
                         columns={columns}
                         sortable
-                        defaultSortState={{ sortColumn: "createdOn", sortDirection: "descending" }}
+                        sortState={sortState}
+                        onSortChange={(_, next) => setSortState(next)}
                         resizableColumns
                         columnSizingOptions={columnSizingOptions}
-                        resizableColumnsOptions={{ autoFitColumns: false }}
+                        resizableColumnsOptions={{ autoFitColumns: true }}
                         selectionMode="multiselect"
                         selectionAppearance="neutral"
                         subtleSelection
+                        selectedItems={selectedRows}
+                        onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
                         getRowId={(item) => item.studentId}
                         focusMode="composite"
@@ -377,7 +553,19 @@ export default function StudentsGrid({ students, onOpenStudent, onOpenApplicatio
                         </DataGridBody>
                       </DataGrid>
                       <footer className="dynamics-grid-footer">
-                        Rows: {filteredItems.length}
+                        <span className="dynamics-grid-footer__count">
+                          Rows: {filteredItems.length}
+                        </span>
+                        {selectedRows.size > 0 ? (
+                          <>
+                            <span className="dynamics-grid-footer__divider" aria-hidden="true">
+                              |
+                            </span>
+                            <span className="dynamics-grid-footer__count">
+                              {selectedRows.size} selected
+                            </span>
+                          </>
+                        ) : null}
                       </footer>
                     </div>
                   </div>
