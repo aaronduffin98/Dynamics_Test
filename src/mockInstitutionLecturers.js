@@ -1,0 +1,88 @@
+/**
+ * Lecturers for the Lecturers list/detail (prototype).
+ * `department` matches `departmentName` from mockDepartments.js.
+ * `taughtCourseIds` reference `courseId` values from mockInstitutionCourses.js.
+ */
+export const mockInstitutionLecturers = [
+  {
+    lecturerId: "LEC-3001",
+    name: "Dr. Amelia Hart",
+    email: "a.hart@college.edu",
+    departmentId: "DEPT-1001",
+    department: "Computer Science",
+    taughtCourseIds: ["PRG-2001"],
+    createdOn: new Date("2023-08-21T10:00:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3002",
+    name: "Prof. Helen Okada",
+    email: "h.okada@college.edu",
+    departmentId: "DEPT-1002",
+    department: "Business Administration",
+    taughtCourseIds: ["PRG-2002", "PRG-2007"],
+    createdOn: new Date("2023-09-05T14:20:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3003",
+    name: "Dr. Raj Patel",
+    email: "r.patel@college.edu",
+    departmentId: "DEPT-1003",
+    department: "Mechanical Engineering",
+    taughtCourseIds: ["PRG-2003"],
+    createdOn: new Date("2023-09-18T09:30:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3004",
+    name: "Dr. Chen Wei",
+    email: "c.wei@college.edu",
+    departmentId: "DEPT-1004",
+    department: "Fine Arts",
+    taughtCourseIds: ["PRG-2004"],
+    createdOn: new Date("2023-10-02T11:45:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3005",
+    name: "Prof. Morgan Ellis",
+    email: "m.ellis@college.edu",
+    departmentId: "DEPT-1005",
+    department: "Mathematics",
+    taughtCourseIds: ["PRG-2005", "PRG-2001"],
+    createdOn: new Date("2023-10-15T08:00:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3006",
+    name: "Dr. Sam Rivera",
+    email: "s.rivera@college.edu",
+    departmentId: "DEPT-1006",
+    department: "Psychology",
+    taughtCourseIds: ["PRG-2006"],
+    createdOn: new Date("2023-11-01T13:10:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3007",
+    name: "Dr. Ingrid Larsen",
+    email: "i.larsen@college.edu",
+    departmentId: "DEPT-1007",
+    department: "Finance & Accounting",
+    taughtCourseIds: ["PRG-2007"],
+    createdOn: new Date("2023-11-20T15:00:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3008",
+    name: "Prof. Alex Moore",
+    email: "a.moore@college.edu",
+    departmentId: "DEPT-1008",
+    department: "English Literature",
+    taughtCourseIds: ["PRG-2008"],
+    createdOn: new Date("2023-12-04T10:25:00.000Z"),
+  },
+  {
+    lecturerId: "LEC-3009",
+    name: "Dr. Yuki Tanaka",
+    email: "y.tanaka@college.edu",
+    departmentId: "DEPT-1001",
+    department: "Computer Science",
+    taughtCourseIds: ["PRG-2001", "PRG-2005"],
+    createdOn: new Date("2024-01-10T12:00:00.000Z"),
+  },
+];

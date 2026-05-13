@@ -1,308 +1,29 @@
-/* Model-driven app — New Student record form (General tab + Timeline) */
+/* New student application — only rules that must NOT apply to every detail page. */
 
-.mda-new-record.dynamics-app {
-  min-height: 100vh;
-}
-
-.mda-new-record .dynamics-main {
-  overflow: hidden;
-}
-
-.mda-record-main {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Command bar — white strip under chrome (Save, Save & Close, …) */
-.mda-record-commandbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px 4px;
-  padding: 4px 12px;
-  background: #ffffff;
-  border-bottom: 1px solid #edebe9;
-  flex-shrink: 0;
-}
-
-.mda-record-commandbar .fui-Button {
-  min-height: 30px;
-  font-size: 12px;
-  font-weight: 400;
-  color: #323130;
-}
-
-.mda-record-commandbar .fui-Button:hover {
-  background: #f3f2f1 !important;
-}
-
-.mda-record-commandbar__spacer {
-  flex: 1;
-  min-width: 8px;
-}
-
-/* Scrollable workspace */
-.mda-record-workspace {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 16px 24px;
-  background: #fafafa;
-}
-
-.mda-record-form {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-
-.mda-record-card {
-  margin-top: 16px;
-  background: #ffffff;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    0 2px 6px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-
-.mda-record-card--form {
-  min-height: 320px;
-}
-
-/* Record header — title + ID · status · entity */
-.mda-record-header {
-  padding: 12px 16px 8px;
-  border-bottom: 1px solid transparent;
-}
-
-.mda-record-header__title {
-  margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #323130;
-  letter-spacing: -0.01em;
-}
-
-.mda-record-header__row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.mda-record-header__id {
-  font-weight: 700;
-  color: #323130;
-}
-
-.mda-record-header__divider-dot {
-  color: #a19f9d;
-  font-weight: 600;
-}
-
-.mda-record-header__status {
+.mda-application-form .mda-record-header__title-unsaved {
   color: #605e5c;
-}
-
-.mda-record-header__entity {
   font-weight: 600;
-  color: #323130;
 }
 
-/* Tabs — General | Related */
-.mda-tabs {
-  display: flex;
-  gap: 0;
-  padding: 0 16px;
-  border-bottom: 1px solid #edebe9;
-  margin-top: 8px;
+.mda-application-form .mda-detail-row__control .fui-Input:focus-within {
+  border-color: #0078d4 !important;
+  background-color: #ffffff !important;
 }
 
-.mda-tab {
-  position: relative;
-  padding: 10px 16px 12px;
-  margin: 0;
-  border: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  color: #605e5c;
-  cursor: pointer;
-}
-
-.mda-tab:hover {
-  color: #323130;
-  background: #faf9f8;
-}
-
-.mda-tab--active {
-  color: #0078d4;
-}
-
-.mda-tab--active::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 0;
-  height: 2px;
-  background: #0078d4;
-}
-
-/* General tab — Plan Field Box layout (Figma: Dynamics MDA / Plan Field Box) */
-.mda-form-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
-  align-items: stretch;
-  background: #fafafa;
-}
-
-@media (max-width: 880px) {
-  .mda-form-columns {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Plan Field Box — white card, soft shadow, bold header, vertical fields.
-   Cards stretch to equal height (Dynamics-style section parity). */
-.mda-field-box {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 16px 20px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    0 2px 6px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  height: 100%;
-  min-height: 0;
-}
-
-.mda-field-box__header {
-  font-family:
-    "Segoe UI",
-    "Segoe UI Web (West European)",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: #242424;
-}
-
-.mda-field-box__fields {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Field — vertical (label above, control below, 4px gap) */
-.mda-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.mda-application-form .mda-detail-row__owner .mda-app-advisor-select {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.mda-field__label {
-  display: flex;
-  align-items: center;
-  min-height: 27px;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: #616161;
-}
-
-.mda-field__req {
-  color: #a4262c;
-}
-
-.mda-field__control {
-  min-width: 0;
-}
-
-.mda-field__error {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  color: #a4262c;
-}
-
-.mda-field--error .mda-input,
-.mda-field--error .mda-select,
-.mda-field--error .fui-Input {
-  outline: 1px solid #a4262c;
-  outline-offset: -1px;
-}
-
-.mda-input.fui-Input,
-.mda-input {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Fluent Input — match Figma "Type Here" field: #f5f5f5 fill, no visible border, 4px radius, 27px tall */
-.mda-new-record .mda-field__control .fui-Input {
-  background-color: #f5f5f5;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  min-height: 27px;
-  height: 27px;
-  font-size: 14px;
-  color: #616161;
-}
-
-.mda-new-record .mda-field__control .fui-Input::after {
-  border-bottom: none;
-}
-
-.mda-new-record .mda-field__control .fui-Input:hover {
-  background-color: #ececec;
-  border-color: transparent;
-}
-
-.mda-new-record .mda-field__control .fui-Input:focus-within {
-  border-color: #0078d4;
-  background-color: #ffffff;
-}
-
-.mda-new-record .mda-field__control .fui-Input input {
-  padding: 0 12px;
-  font-size: 14px;
-  letter-spacing: -0.01em;
-  color: #616161;
-}
-
-.mda-new-record .mda-field__control .fui-Input input::placeholder {
-  color: #8a8886;
-}
-
-/* Native select — match the same field aesthetic */
-.mda-select {
+.mda-application-form .mda-detail-row__control .mda-select {
   width: 100%;
   box-sizing: border-box;
-  min-height: 27px;
-  height: 27px;
+  min-height: 28px;
+  height: 28px;
   padding: 0 32px 0 12px;
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
-  letter-spacing: -0.01em;
-  color: #616161;
+  color: #323130;
   background-color: #f5f5f5;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   background-repeat: no-repeat;
@@ -314,105 +35,66 @@
   -moz-appearance: none;
 }
 
-.mda-select:hover {
+.mda-application-form .mda-detail-row__control .mda-select:hover {
   background-color: #ececec;
 }
 
-.mda-select:focus {
+.mda-application-form .mda-detail-row__control .mda-select:focus {
   outline: none;
   border-color: #0078d4;
   background-color: #ffffff;
 }
 
-/* Checkbox stack — sit inside the field box, matching label/text colour */
-.mda-checkbox-stack {
+.mda-application-form .mda-field__error {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #a4262c;
+  line-height: 1.35;
+}
+
+.mda-application-form .mda-checkbox-stack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   padding: 2px 0;
 }
 
-.mda-checkbox-stack .fui-Checkbox {
+.mda-application-form .mda-checkbox-stack .fui-Checkbox {
   font-size: 13px;
-  color: #616161;
-}
-
-/* Timeline tab panel (inside form card) */
-.mda-timeline-panel {
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
-}
-
-.mda-timeline-panel__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #edebe9;
-}
-
-.mda-timeline__title {
-  font-size: 14px;
-  font-weight: 700;
   color: #323130;
 }
 
-.mda-timeline__actions {
-  display: flex;
-  gap: 2px;
-}
-
-.mda-timeline-panel__body {
-  padding: 12px 16px 24px;
-}
-
-.mda-timeline__note-input.fui-Input {
-  width: 100%;
-  margin-bottom: 16px;
-  font-size: 13px;
-}
-
-.mda-timeline-panel__group-label {
-  margin: 0 0 10px;
-  padding-bottom: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #605e5c;
-  border-bottom: 1px solid #edebe9;
-}
-
-.mda-timeline__empty {
-  margin: 0;
-  font-size: 12px;
-  color: #605e5c;
-  line-height: 1.45;
-}
-
-/* Related tab */
-.mda-related-placeholder {
-  padding: 24px 16px 32px;
-}
-
-.mda-related-placeholder__text {
-  margin: 0;
-  font-size: 13px;
-  color: #605e5c;
-  max-width: 36rem;
-  line-height: 1.5;
-}
-
-/* Sitemap group labels */
-.mda-sitemap .mda-sitemap__group-label {
-  margin: 12px 16px 6px;
+.mda-application-form .mda-sitemap .mda-sitemap__group-label {
+  margin: 14px 16px 6px;
   padding: 0;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  color: #605e5c;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: #323130;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
-.mda-sitemap.mda-sitemap {
+.mda-application-form .mda-sitemap.mda-sitemap:not(.dynamics-sitemap--collapsed) {
   width: 240px;
+}
+
+.mda-application-form .mda-sitemap.mda-sitemap .dynamics-sitemap__list--section {
+  padding-top: 0;
+  padding-bottom: 2px;
+}
+
+.mda-application-form .mda-sitemap.mda-sitemap .dynamics-sitemap__item--active {
+  background: #ffffff;
+}
+
+.mda-application-form .mda-sitemap.mda-sitemap .dynamics-sitemap__list--pinned + .mda-sitemap__group-label {
+  margin-top: 10px;
+}
+
+.mda-application-form .mda-detail-related .mda-app-related-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #323130;
 }

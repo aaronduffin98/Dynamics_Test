@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  Avatar,
   Button,
   DataGrid,
   DataGridBody,
@@ -9,12 +8,6 @@ import {
   DataGridHeaderCell,
   DataGridRow,
   Input,
-  Menu,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
   TableCellLayout,
   createTableColumn,
 } from "@fluentui/react-components";
@@ -47,77 +40,23 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import {
-  getAssignedLecturer,
-  getCoursesForStudent,
-  studentCourseLinks,
-  studentLecturerLink,
-} from "./mockRelated.js";
 import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
-/** Saved-view options for the Dynamics-style view title picker (UI prototype). */
-const STUDENT_VIEWS = [
-  { id: "active", label: "Active Students", isDefault: true },
-  { id: "flagged", label: "Active Students — Flagged", isDefault: false },
-  { id: "lastMonth", label: "Students created last month", isDefault: false },
-  { id: "older", label: "Students inactive 2+ terms", isDefault: false },
-  { id: "inactive", label: "Inactive students", isDefault: false },
-  { id: "mine", label: "My students", isDefault: false },
+const STAFF_VIEWS = [
+  { id: "all", label: "All Staff", isDefault: true },
+  { id: "admin", label: "Administrators", isDefault: false },
+  { id: "finance", label: "Finance", isDefault: false },
+  { id: "support", label: "Support", isDefault: false },
+  { id: "it", label: "IT", isDefault: false },
+  { id: "mine", label: "My direct reports", isDefault: false },
 ];
 
-function statusClass(status) {
-  const key = String(status).toLowerCase();
-  return `dynamics-status dynamics-status--${key}`;
-}
-
-function StatusCell({ status }) {
-  return <span className={statusClass(status)}>{status}</span>;
-}
-
-function OwnerCell({ name }) {
-  return (
-    <span className="dynamics-owner-cell">
-      <Avatar name={name} size={24} color="colorful" />
-      <span className="dynamics-owner-cell__name">{name}</span>
-    </span>
-  );
-}
-
-function LecturerCell({ name }) {
-  if (!name) {
-    return <span className="dynamics-grid-empty">—</span>;
-  }
-  return (
-    <span className="dynamics-owner-cell">
-      <Avatar name={name} size={24} color="colorful" />
-      <span className="dynamics-owner-cell__name">{name}</span>
-    </span>
-  );
-}
-
-function CoursesCell({ courses }) {
-  if (!courses || courses.length === 0) {
-    return <span className="dynamics-grid-empty">No courses</span>;
-  }
-  const label = courses.map((c) => c.courseId).join(", ");
-  const tooltip = courses.map((c) => `${c.courseId} — ${c.courseName}`).join("\n");
-  return (
-    <span className="dynamics-courses-cell" title={tooltip}>
-      <span className="dynamics-courses-cell__count">{courses.length}</span>
-      <span className="dynamics-courses-cell__list">{label}</span>
-    </span>
-  );
-}
-
-export default function StudentsGrid({
-  students,
-  courseLinks = studentCourseLinks,
-  lecturerLinks = studentLecturerLink,
-  onOpenStudent,
-  onOpenApplication,
-  onNavigateStaff,
+export default function StaffGrid({
+  staff,
+  onOpenStaff,
+  onNavigateStudents,
   onNavigateApplications,
   onNavigateDepartments,
   onNavigateCourses,
@@ -130,11 +69,9 @@ export default function StudentsGrid({
     sortColumn: "createdOn",
     sortDirection: "descending",
   });
-  /** Controlled selection so the footer can show "N selected" */
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  const [selectedViewId, setSelectedViewId] = useState(STUDENT_VIEWS[0].id);
+  const [selectedViewId, setSelectedViewId] = useState(STAFF_VIEWS[0].id);
 
-  /** Mock command bar — delete / refresh stay inert for the prototype */
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
   }, []);
@@ -143,29 +80,15 @@ export default function StudentsGrid({
     setSortState({ sortColumn: columnId, sortDirection: direction });
   }, []);
 
-  /** Pre-compute lecturer + courses per row so sorting/filtering can use string values directly */
-  const enrichedStudents = useMemo(() => {
-    return students.map((s) => {
-      const lecturer = getAssignedLecturer(s.studentId, lecturerLinks);
-      const courses = getCoursesForStudent(s.studentId, courseLinks);
-      return {
-        ...s,
-        lecturerName: lecturer?.name ?? "",
-        courses,
-        coursesLabel: courses.map((c) => c.courseId).join(", "),
-      };
-    });
-  }, [students, courseLinks, lecturerLinks]);
-
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return enrichedStudents;
-    return enrichedStudents.filter((row) =>
-      [row.studentId, row.fullName, row.email, row.status, row.ownerName, row.lecturerName, row.coursesLabel].some(
-        (v) => String(v).toLowerCase().includes(q)
+    if (!q) return staff;
+    return staff.filter((row) =>
+      [row.staffId, row.name, row.role, row.department, row.email].some((v) =>
+        String(v).toLowerCase().includes(q)
       )
     );
-  }, [filter, enrichedStudents]);
+  }, [filter, staff]);
 
   const columns = useMemo(() => {
     const headerOf = (columnId, label) => (
@@ -179,30 +102,50 @@ export default function StudentsGrid({
     );
     return [
       createTableColumn({
-        columnId: "studentId",
-        compare: (a, b) => a.studentId.localeCompare(b.studentId),
-        renderHeaderCell: () => headerOf("studentId", "Student ID"),
+        columnId: "staffId",
+        compare: (a, b) => a.staffId.localeCompare(b.staffId),
+        renderHeaderCell: () => headerOf("staffId", "Staff ID"),
         renderCell: (item) => (
           <button
             type="button"
             className="dynamics-grid-link"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenStudent?.(item.studentId);
+              onOpenStaff?.(item.staffId);
             }}
-            aria-label={`Open student ${item.studentId}`}
+            aria-label={`Open staff ${item.staffId}`}
           >
-            {item.studentId}
+            {item.staffId}
           </button>
         ),
       }),
       createTableColumn({
-        columnId: "fullName",
-        compare: (a, b) => a.fullName.localeCompare(b.fullName),
-        renderHeaderCell: () => headerOf("fullName", "Name"),
+        columnId: "name",
+        compare: (a, b) => a.name.localeCompare(b.name),
+        renderHeaderCell: () => headerOf("name", "Name"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.fullName}>
-            {item.fullName}
+          <TableCellLayout truncate title={item.name}>
+            {item.name}
+          </TableCellLayout>
+        ),
+      }),
+      createTableColumn({
+        columnId: "role",
+        compare: (a, b) => a.role.localeCompare(b.role),
+        renderHeaderCell: () => headerOf("role", "Role"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.role}>
+            {item.role}
+          </TableCellLayout>
+        ),
+      }),
+      createTableColumn({
+        columnId: "department",
+        compare: (a, b) => a.department.localeCompare(b.department),
+        renderHeaderCell: () => headerOf("department", "Department"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.department}>
+            {item.department}
           </TableCellLayout>
         ),
       }),
@@ -217,48 +160,21 @@ export default function StudentsGrid({
         ),
       }),
       createTableColumn({
-        columnId: "status",
-        compare: (a, b) => a.status.localeCompare(b.status),
-        renderHeaderCell: () => headerOf("status", "Status"),
-        renderCell: (item) => <StatusCell status={item.status} />,
-      }),
-      createTableColumn({
-        columnId: "lecturerName",
-        compare: (a, b) => a.lecturerName.localeCompare(b.lecturerName),
-        renderHeaderCell: () => headerOf("lecturerName", "Lecturer"),
-        renderCell: (item) => <LecturerCell name={item.lecturerName} />,
-      }),
-      createTableColumn({
-        columnId: "courses",
-        compare: (a, b) => a.courses.length - b.courses.length,
-        renderHeaderCell: () => headerOf("courses", "Courses"),
-        renderCell: (item) => <CoursesCell courses={item.courses} />,
-      }),
-      createTableColumn({
-        columnId: "ownerName",
-        compare: (a, b) => a.ownerName.localeCompare(b.ownerName),
-        renderHeaderCell: () => headerOf("ownerName", "Owner"),
-        renderCell: (item) => <OwnerCell name={item.ownerName} />,
-      }),
-      createTableColumn({
         columnId: "createdOn",
         compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
         renderHeaderCell: () => headerOf("createdOn", "Created On"),
         renderCell: (item) => dateFmt.format(item.createdOn),
       }),
     ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenStudent]);
+  }, [sortState, handleColumnSort, onMockCommand, onOpenStaff]);
 
-  /** Equal default widths — real equal distribution is enforced by CSS flex on the row */
   const columnSizingOptions = useMemo(
     () => ({
-      studentId: { defaultWidth: 160, minWidth: 80 },
-      fullName: { defaultWidth: 160, minWidth: 80 },
+      staffId: { defaultWidth: 160, minWidth: 80 },
+      name: { defaultWidth: 160, minWidth: 80 },
+      role: { defaultWidth: 160, minWidth: 80 },
+      department: { defaultWidth: 160, minWidth: 80 },
       email: { defaultWidth: 160, minWidth: 80 },
-      status: { defaultWidth: 160, minWidth: 80 },
-      lecturerName: { defaultWidth: 160, minWidth: 80 },
-      courses: { defaultWidth: 160, minWidth: 80 },
-      ownerName: { defaultWidth: 160, minWidth: 80 },
       createdOn: { defaultWidth: 160, minWidth: 80 },
     }),
     []
@@ -343,13 +259,13 @@ export default function StudentsGrid({
           <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active">
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Students</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active">
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
               </button>
@@ -389,93 +305,88 @@ export default function StudentsGrid({
             <div className="dynamics-surface-card dynamics-surface-card--command">
               <div className="dynamics-commandbar" role="toolbar" aria-label="Commands">
                 <div className="dynamics-commandbar__scroll">
-              <Button
-                appearance="subtle"
-                type="button"
-                onClick={onMockCommand}
-                title="Preview only — chart view"
-              >
-                <span className="dynamics-cmd-btn__inner">
-                  <DataBarVerticalRegular className="dynamics-cmd-btn__icon" />
-                  <span>Show Chart</span>
-                </span>
-              </Button>
-              <Button
-                appearance="subtle"
-                type="button"
-                onClick={() => onOpenApplication?.()}
-                title="Create a new student via university application"
-              >
-                <span className="dynamics-cmd-btn__inner">
-                  <AddRegular className="dynamics-cmd-btn__icon" />
-                  <span>New</span>
-                </span>
-              </Button>
-              <Button
-                appearance="subtle"
-                type="button"
-                onClick={onMockCommand}
-                title="Preview only — delete options"
-              >
-                <span className="dynamics-cmd-btn__inner">
-                  <DeleteRegular className="dynamics-cmd-btn__icon" />
-                  <span>Delete</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — refresh list">
-                <span className="dynamics-cmd-btn__inner">
-                  <ArrowClockwiseRegular className="dynamics-cmd-btn__icon" />
-                  <span>Refresh</span>
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Power BI visualize">
-                <span className="dynamics-cmd-btn__inner">
-                  <DataPieRegular className="dynamics-cmd-btn__icon" />
-                  <span>Visualize this view</span>
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — email link">
-                <span className="dynamics-cmd-btn__inner">
-                  <LinkRegular className="dynamics-cmd-btn__icon" />
-                  <span>Email a Link</span>
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Power Automate">
-                <span className="dynamics-cmd-btn__inner">
-                  <FlowRegular className="dynamics-cmd-btn__icon" />
-                  <span>Flow</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — reporting">
-                <span className="dynamics-cmd-btn__inner">
-                  <DocumentBulletListRegular className="dynamics-cmd-btn__icon" />
-                  <span>Run Report</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Excel templates">
-                <span className="dynamics-cmd-btn__inner">
-                  <TableRegular className="dynamics-cmd-btn__icon" />
-                  <span>Excel Templates</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — export">
-                <span className="dynamics-cmd-btn__inner">
-                  <ArrowExportRegular className="dynamics-cmd-btn__icon" />
-                  <span>Export to Excel</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
-              <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — import">
-                <span className="dynamics-cmd-btn__inner">
-                  <ArrowImportRegular className="dynamics-cmd-btn__icon" />
-                  <span>Import from Excel</span>
-                  <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
-                </span>
-              </Button>
+                  <Button
+                    appearance="subtle"
+                    type="button"
+                    onClick={onMockCommand}
+                    title="Preview only — chart view"
+                  >
+                    <span className="dynamics-cmd-btn__inner">
+                      <DataBarVerticalRegular className="dynamics-cmd-btn__icon" />
+                      <span>Show Chart</span>
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new staff">
+                    <span className="dynamics-cmd-btn__inner">
+                      <AddRegular className="dynamics-cmd-btn__icon" />
+                      <span>New</span>
+                    </span>
+                  </Button>
+                  <Button
+                    appearance="subtle"
+                    type="button"
+                    onClick={onMockCommand}
+                    title="Preview only — delete options"
+                  >
+                    <span className="dynamics-cmd-btn__inner">
+                      <DeleteRegular className="dynamics-cmd-btn__icon" />
+                      <span>Delete</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — refresh list">
+                    <span className="dynamics-cmd-btn__inner">
+                      <ArrowClockwiseRegular className="dynamics-cmd-btn__icon" />
+                      <span>Refresh</span>
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Power BI visualize">
+                    <span className="dynamics-cmd-btn__inner">
+                      <DataPieRegular className="dynamics-cmd-btn__icon" />
+                      <span>Visualize this view</span>
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — email link">
+                    <span className="dynamics-cmd-btn__inner">
+                      <LinkRegular className="dynamics-cmd-btn__icon" />
+                      <span>Email a Link</span>
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Power Automate">
+                    <span className="dynamics-cmd-btn__inner">
+                      <FlowRegular className="dynamics-cmd-btn__icon" />
+                      <span>Flow</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — reporting">
+                    <span className="dynamics-cmd-btn__inner">
+                      <DocumentBulletListRegular className="dynamics-cmd-btn__icon" />
+                      <span>Run Report</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — Excel templates">
+                    <span className="dynamics-cmd-btn__inner">
+                      <TableRegular className="dynamics-cmd-btn__icon" />
+                      <span>Excel Templates</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — export">
+                    <span className="dynamics-cmd-btn__inner">
+                      <ArrowExportRegular className="dynamics-cmd-btn__icon" />
+                      <span>Export to Excel</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — import">
+                    <span className="dynamics-cmd-btn__inner">
+                      <ArrowImportRegular className="dynamics-cmd-btn__icon" />
+                      <span>Import from Excel</span>
+                      <ChevronDownRegular className="dynamics-cmd-btn__chevron" aria-hidden="true" />
+                    </span>
+                  </Button>
                 </div>
                 <div className="dynamics-commandbar__right">
                   <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — sharing">
@@ -490,11 +401,11 @@ export default function StudentsGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Students view">
+              <section className="dynamics-view" aria-label="Staff view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
-                      views={STUDENT_VIEWS}
+                      views={STAFF_VIEWS}
                       selectedViewId={selectedViewId}
                       onSelectViewId={setSelectedViewId}
                       onManageViews={onMockCommand}
@@ -538,9 +449,9 @@ export default function StudentsGrid({
                         selectedItems={selectedRows}
                         onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
-                        getRowId={(item) => item.studentId}
+                        getRowId={(item) => item.staffId}
                         focusMode="composite"
-                        aria-label="Students — sortable, resizable columns"
+                        aria-label="Staff — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
@@ -556,7 +467,7 @@ export default function StudentsGrid({
                               selectionCell={{ "aria-label": "Select row" }}
                               onDoubleClick={(e) => {
                                 e.preventDefault();
-                                onOpenStudent?.(item.studentId);
+                                onOpenStaff?.(item.staffId);
                               }}
                             >
                               {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
@@ -565,17 +476,13 @@ export default function StudentsGrid({
                         </DataGridBody>
                       </DataGrid>
                       <footer className="dynamics-grid-footer">
-                        <span className="dynamics-grid-footer__count">
-                          Rows: {filteredItems.length}
-                        </span>
+                        <span className="dynamics-grid-footer__count">Rows: {filteredItems.length}</span>
                         {selectedRows.size > 0 ? (
                           <>
                             <span className="dynamics-grid-footer__divider" aria-hidden="true">
                               |
                             </span>
-                            <span className="dynamics-grid-footer__count">
-                              {selectedRows.size} selected
-                            </span>
+                            <span className="dynamics-grid-footer__count">{selectedRows.size} selected</span>
                           </>
                         ) : null}
                       </footer>
