@@ -47,38 +47,23 @@ import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } f
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
-const LECTURER_VIEWS = [
-  { id: "all", label: "All Lecturers", isDefault: true },
-  { id: "fulltime", label: "Full-time faculty", isDefault: false },
-  { id: "stem", label: "STEM departments", isDefault: false },
-  { id: "arts", label: "Arts & Humanities", isDefault: false },
-  { id: "business", label: "Business & Economics", isDefault: false },
-  { id: "active", label: "Active lecturers", isDefault: false },
+const SALES_STAFF_VIEWS = [
+  { id: "all", label: "All Sales Staff", isDefault: true },
+  { id: "ae", label: "Account Executives", isDefault: false },
+  { id: "leads", label: "Regional Leads", isDefault: false },
+  { id: "show", label: "Show Home Specialists", isDefault: false },
+  { id: "aftercare", label: "Aftercare Advisors", isDefault: false },
+  { id: "mine", label: "My team's accounts", isDefault: false },
 ];
 
-function CoursesCell({ courses }) {
-  if (!courses || courses.length === 0) {
-    return <span className="dynamics-grid-empty">No courses</span>;
-  }
-  const label = courses.map((c) => c.courseId).join(", ");
-  const tooltip = courses.map((c) => `${c.courseId} — ${c.courseName}`).join("\n");
-  return (
-    <span className="dynamics-courses-cell" title={tooltip}>
-      <span className="dynamics-courses-cell__count">{courses.length}</span>
-      <span className="dynamics-courses-cell__list">{label}</span>
-    </span>
-  );
-}
-
-export default function LecturersGrid({
-  lecturers,
-  onOpenLecturer,
+export default function SalesStaffGrid({
+  salesStaff,
+  onOpenSalesStaff,
   onNavigateStudents,
   onNavigateProperties,
   onNavigateBuyers,
   onNavigateContracts,
   onNavigateStaff,
-  onNavigateSalesStaff,
   onNavigateApplications,
   onNavigateDepartments,
   onNavigateCourses,
@@ -92,7 +77,7 @@ export default function LecturersGrid({
     sortDirection: "descending",
   });
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  const [selectedViewId, setSelectedViewId] = useState(LECTURER_VIEWS[0].id);
+  const [selectedViewId, setSelectedViewId] = useState(SALES_STAFF_VIEWS[0].id);
 
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
@@ -104,14 +89,13 @@ export default function LecturersGrid({
 
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return lecturers;
-    return lecturers.filter((row) => {
-      const courseTokens = (row.taughtCourses ?? []).flatMap((c) => [c.courseId, c.courseName]);
-      return [row.lecturerId, row.name, row.email, row.department, row.coursesLabel, ...courseTokens].some((v) =>
+    if (!q) return salesStaff;
+    return salesStaff.filter((row) =>
+      [row.staffId, row.name, row.role, row.assignedDevelopmentName, row.assignedDevelopmentId, row.email].some((v) =>
         String(v).toLowerCase().includes(q)
-      );
-    });
-  }, [filter, lecturers]);
+      )
+    );
+  }, [filter, salesStaff]);
 
   const columns = useMemo(() => {
     const headerOf = (columnId, label) => (
@@ -125,20 +109,20 @@ export default function LecturersGrid({
     );
     return [
       createTableColumn({
-        columnId: "lecturerId",
-        compare: (a, b) => a.lecturerId.localeCompare(b.lecturerId),
-        renderHeaderCell: () => headerOf("lecturerId", "Lecturer ID"),
+        columnId: "staffId",
+        compare: (a, b) => a.staffId.localeCompare(b.staffId),
+        renderHeaderCell: () => headerOf("staffId", "Staff ID"),
         renderCell: (item) => (
           <button
             type="button"
             className="dynamics-grid-link"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenLecturer?.(item.lecturerId);
+              onOpenSalesStaff?.(item.staffId);
             }}
-            aria-label={`Open lecturer ${item.lecturerId}`}
+            aria-label={`Open sales staff ${item.staffId}`}
           >
-            {item.lecturerId}
+            {item.staffId}
           </button>
         ),
       }),
@@ -153,6 +137,26 @@ export default function LecturersGrid({
         ),
       }),
       createTableColumn({
+        columnId: "role",
+        compare: (a, b) => a.role.localeCompare(b.role),
+        renderHeaderCell: () => headerOf("role", "Role"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.role}>
+            {item.role}
+          </TableCellLayout>
+        ),
+      }),
+      createTableColumn({
+        columnId: "assignedDevelopment",
+        compare: (a, b) => a.assignedDevelopmentName.localeCompare(b.assignedDevelopmentName),
+        renderHeaderCell: () => headerOf("assignedDevelopment", "Assigned Development"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.assignedDevelopmentName}>
+            {item.assignedDevelopmentName}
+          </TableCellLayout>
+        ),
+      }),
+      createTableColumn({
         columnId: "email",
         compare: (a, b) => a.email.localeCompare(b.email),
         renderHeaderCell: () => headerOf("email", "Email"),
@@ -163,37 +167,21 @@ export default function LecturersGrid({
         ),
       }),
       createTableColumn({
-        columnId: "department",
-        compare: (a, b) => a.department.localeCompare(b.department),
-        renderHeaderCell: () => headerOf("department", "Department"),
-        renderCell: (item) => (
-          <TableCellLayout truncate title={item.department}>
-            {item.department}
-          </TableCellLayout>
-        ),
-      }),
-      createTableColumn({
-        columnId: "courses",
-        compare: (a, b) => a.coursesLabel.localeCompare(b.coursesLabel),
-        renderHeaderCell: () => headerOf("courses", "Courses"),
-        renderCell: (item) => <CoursesCell courses={item.taughtCourses} />,
-      }),
-      createTableColumn({
         columnId: "createdOn",
         compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
         renderHeaderCell: () => headerOf("createdOn", "Created On"),
         renderCell: (item) => dateFmt.format(item.createdOn),
       }),
     ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenLecturer]);
+  }, [sortState, handleColumnSort, onMockCommand, onOpenSalesStaff]);
 
   const columnSizingOptions = useMemo(
     () => ({
-      lecturerId: { defaultWidth: 140, minWidth: 80 },
+      staffId: { defaultWidth: 160, minWidth: 80 },
       name: { defaultWidth: 160, minWidth: 80 },
-      email: { defaultWidth: 180, minWidth: 80 },
-      department: { defaultWidth: 160, minWidth: 80 },
-      courses: { defaultWidth: 200, minWidth: 80 },
+      role: { defaultWidth: 160, minWidth: 80 },
+      assignedDevelopment: { defaultWidth: 200, minWidth: 80 },
+      email: { defaultWidth: 160, minWidth: 80 },
       createdOn: { defaultWidth: 160, minWidth: 80 },
     }),
     []
@@ -308,13 +296,13 @@ export default function LecturersGrid({
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active">
                 <PersonAccountsRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateLecturers?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
                 <PersonRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Lecturers</span>
               </button>
@@ -359,7 +347,7 @@ export default function LecturersGrid({
                       <span>Show Chart</span>
                     </span>
                   </Button>
-                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new lecturer">
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new record">
                     <span className="dynamics-cmd-btn__inner">
                       <AddRegular className="dynamics-cmd-btn__icon" />
                       <span>New</span>
@@ -444,11 +432,11 @@ export default function LecturersGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Lecturers view">
+              <section className="dynamics-view" aria-label="Sales Staff view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
-                      views={LECTURER_VIEWS}
+                      views={SALES_STAFF_VIEWS}
                       selectedViewId={selectedViewId}
                       onSelectViewId={setSelectedViewId}
                       onManageViews={onMockCommand}
@@ -492,9 +480,9 @@ export default function LecturersGrid({
                         selectedItems={selectedRows}
                         onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
-                        getRowId={(item) => item.lecturerId}
+                        getRowId={(item) => item.staffId}
                         focusMode="composite"
-                        aria-label="Lecturers — sortable, resizable columns"
+                        aria-label="Sales Staff — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
@@ -510,7 +498,7 @@ export default function LecturersGrid({
                               selectionCell={{ "aria-label": "Select row" }}
                               onDoubleClick={(e) => {
                                 e.preventDefault();
-                                onOpenLecturer?.(item.lecturerId);
+                                onOpenSalesStaff?.(item.staffId);
                               }}
                             >
                               {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}

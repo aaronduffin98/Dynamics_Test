@@ -17,6 +17,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -26,6 +27,8 @@ import {
   PeopleRegular,
   PeopleTeamRegular,
   PersonAddRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   ProhibitedRegular,
@@ -40,7 +43,6 @@ import {
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import StudentRelatedGrids from "./StudentRelatedGrids.jsx";
 import { PROGRAM_COORDINATOR_NAME } from "./programCoordinator.js";
-import { getAssignedLecturer, getCoursesForStudent } from "./mockRelated.js";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
 
@@ -52,27 +54,6 @@ const dateLong = new Intl.DateTimeFormat(undefined, {
 const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
 });
-
-/** Owning academic division — varies by record for a realistic college prototype */
-const SCHOOL_DIVISIONS = [
-  "College of Arts & Humanities",
-  "School of Science & Engineering",
-  "School of Business & Economics",
-  "College of Social Sciences & Education",
-];
-
-function schoolDivisionForStudent(studentId) {
-  const key = String(studentId).replace(/\D/g, "") || "0";
-  const n = key.split("").reduce((acc, d) => acc + Number(d), 0);
-  return SCHOOL_DIVISIONS[n % SCHOOL_DIVISIONS.length];
-}
-
-function splitFullName(fullName) {
-  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { firstName: "", lastName: "" };
-  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
-  return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-}
 
 /** Horizontal label-left field row used inside the Dynamics detail form */
 function DetailRow({ label, required, alignTop, children }) {
@@ -124,32 +105,20 @@ export default function StudentDetailView({
   lecturerLinks,
   onNavigateStudents,
   onNavigateStaff,
+  onNavigateSalesStaff,
   onNavigateApplications,
   onNavigateDepartments,
   onNavigateCourses,
   onNavigateLecturers,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const { firstName, lastName } = splitFullName(student.fullName);
   const createdLabel = useMemo(() => dateLong.format(student.createdOn), [student.createdOn]);
   const createdShort = useMemo(() => dateShort.format(student.createdOn), [student.createdOn]);
-
-  const lecturer = useMemo(
-    () => getAssignedLecturer(student.studentId, lecturerLinks),
-    [student.studentId, lecturerLinks]
-  );
-  const courses = useMemo(
-    () => getCoursesForStudent(student.studentId, courseLinks),
-    [student.studentId, courseLinks]
-  );
-
-  const coursesLabel = courses.length === 0
-    ? "—"
-    : courses.map((c) => `${c.courseId} — ${c.courseName}`).join("; ");
-
-  const schoolDivision = useMemo(() => schoolDivisionForStudent(student.studentId), [student.studentId]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -238,13 +207,37 @@ export default function StudentDetailView({
             <li>
               <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateStudents?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
+                <BuildingRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
               </button>
             </li>
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -364,11 +357,11 @@ export default function StudentDetailView({
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Student</p>
+                    <p className="mda-record-header__subtitle">Development</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={schoolDivision} secondary="Base" />
+                      <HeaderSummaryField primary={student.region ?? "—"} secondary="Region" />
                       <HeaderSummaryField
                         primary={PROGRAM_COORDINATOR_NAME}
                         secondary="Program coordinator"
@@ -377,11 +370,11 @@ export default function StudentDetailView({
                         avatarName={PROGRAM_COORDINATOR_NAME}
                       />
                       <HeaderSummaryField
-                        primary={lecturer?.name ?? "—"}
-                        secondary="Faculty advisor"
-                        variant={lecturer?.name ? "link" : "default"}
-                        showAvatar={Boolean(lecturer?.name)}
-                        avatarName={lecturer?.name}
+                        primary={student.ownerName ?? "—"}
+                        secondary="Record owner"
+                        variant={student.ownerName ? "link" : "default"}
+                        showAvatar={Boolean(student.ownerName)}
+                        avatarName={student.ownerName}
                       />
                     </div>
                     <button
@@ -424,53 +417,26 @@ export default function StudentDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Student details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Development details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
-                      <DetailRow label="First name" required>
-                        <FluentInput readOnly value={firstName} className="mda-input" />
+                      <DetailRow label="Name" required>
+                        <FluentInput readOnly value={student.fullName} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Last name" required>
-                        <FluentInput readOnly value={lastName} className="mda-input" />
+                      <DetailRow label="Location" required>
+                        <FluentInput readOnly value={student.location} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Campus email" required>
-                        <FluentInput readOnly value={student.email} className="mda-input" />
-                      </DetailRow>
-                      <DetailRow label="Student ID">
-                        <FluentInput readOnly value={student.studentId} className="mda-input" />
-                      </DetailRow>
-                      <DetailRow label="Enrollment status">
+                      <DetailRow label="Status" required>
                         <FluentInput readOnly value={student.status} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Record created">
+                      <DetailRow label="Total units">
+                        <FluentInput readOnly value={String(student.totalUnits ?? "")} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Created on">
                         <FluentInput readOnly value={createdLabel} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Faculty advisor">
-                        {lecturer ? (
-                          <div className="mda-detail-row__owner">
-                            <Avatar name={lecturer.name} size={20} color="colorful" />
-                            <FluentInput readOnly value={lecturer.name} className="mda-input mda-detail-row__owner-input" />
-                          </div>
-                        ) : (
-                          <FluentInput readOnly value="Not assigned" className="mda-input" />
-                        )}
-                      </DetailRow>
-                      <DetailRow label="Records owner">
-                        <div className="mda-detail-row__owner">
-                          <Avatar name={student.ownerName} size={20} color="colorful" />
-                          <FluentInput readOnly value={student.ownerName} className="mda-input mda-detail-row__owner-input" />
-                        </div>
-                      </DetailRow>
-                      <DetailRow label="Enrolled courses" alignTop>
-                        <FluentInput
-                          readOnly
-                          value={coursesLabel}
-                          className="mda-input"
-                          title={coursesLabel}
-                        />
-                      </DetailRow>
-                      <DetailRow label="Course load (count)">
-                        <FluentInput readOnly value={String(courses.length)} className="mda-input" />
+                      <DetailRow label="Development ID">
+                        <FluentInput readOnly value={student.studentId} className="mda-input" />
                       </DetailRow>
                     </div>
                   ) : (
@@ -525,7 +491,7 @@ export default function StudentDetailView({
                     </span>
                     <h3 className="mda-timeline-aside__empty-title">Get started</h3>
                     <p className="mda-timeline-aside__empty-text">
-                      Add notes, portal messages, and activities to build this student&apos;s timeline.
+                      Add notes, portal messages, and activities to build this development&apos;s timeline.
                     </p>
                     <p className="mda-timeline-aside__empty-meta">
                       Record created on {createdShort}

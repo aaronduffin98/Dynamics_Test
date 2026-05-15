@@ -41,13 +41,10 @@ import {
   TableRegular,
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
+import StudentRelatedGrids from "./StudentRelatedGrids.jsx";
+import { PROGRAM_COORDINATOR_NAME } from "./programCoordinator.js";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
-
-const dateLong = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "long",
-  timeStyle: "short",
-});
 
 const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -94,9 +91,11 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
   );
 }
 
-export default function StaffDetailView({
-  staff,
+export default function BuyerDetailView({
+  buyer,
   onBack,
+  courseLinks,
+  lecturerLinks,
   onNavigateStudents,
   onNavigateProperties,
   onNavigateBuyers,
@@ -107,12 +106,12 @@ export default function StaffDetailView({
   onNavigateDepartments,
   onNavigateCourses,
   onNavigateLecturers,
+  onOpenDevelopment,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const createdLabel = useMemo(() => dateLong.format(staff.createdOn), [staff.createdOn]);
-  const createdShort = useMemo(() => dateShort.format(staff.createdOn), [staff.createdOn]);
+  const createdShort = useMemo(() => dateShort.format(buyer.createdOn), [buyer.createdOn]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -211,7 +210,11 @@ export default function StaffDetailView({
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+              <button
+                type="button"
+                className="dynamics-sitemap__item dynamics-sitemap__item--active"
+                onClick={() => onNavigateBuyers?.()}
+              >
                 <PersonCircleRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Buyers</span>
               </button>
@@ -223,7 +226,7 @@ export default function StaffDetailView({
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateStaff?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
               </button>
@@ -343,25 +346,27 @@ export default function StaffDetailView({
 
           <div className="mda-record-workspace">
             <div className="mda-record-form mda-detail-page-layout">
-              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-staff-detail-card-title">
+              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-detail-card-title">
                 <header className="mda-record-header mda-record-header--detail">
                   <div className="mda-record-header__main">
-                    <h2 id="mda-staff-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
-                      <span className="mda-record-header__title-id">{staff.staffId}</span>
+                    <h2 id="mda-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
+                      <span className="mda-record-header__title-id">{buyer.buyerId}</span>
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Staff</p>
+                    <p className="mda-record-header__subtitle">Buyer</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={staff.department} secondary="Base" />
-                      <HeaderSummaryField primary={staff.role} secondary="Job title" />
+                      <HeaderSummaryField primary={buyer.developmentRegion ?? "—"} secondary="Region" />
                       <HeaderSummaryField
-                        primary={staff.email}
-                        secondary="Work email"
+                        primary={PROGRAM_COORDINATOR_NAME}
+                        secondary="Program coordinator"
                         variant="link"
+                        showAvatar
+                        avatarName={PROGRAM_COORDINATOR_NAME}
                       />
+                      <HeaderSummaryField primary={buyer.email ?? "—"} secondary="Email" />
                     </div>
                     <button
                       type="button"
@@ -403,34 +408,41 @@ export default function StaffDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Staff details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Buyer details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "0 0 4px" }}>
-                        Basic Information
-                      </p>
-                      <DetailRow label="Name" required>
-                        <FluentInput readOnly value={staff.name} className="mda-input" />
+                      <DetailRow label="Buyer ID" required>
+                        <FluentInput readOnly value={buyer.buyerId} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Role" required>
-                        <FluentInput readOnly value={staff.role} className="mda-input" />
+                      <DetailRow label="Name" required>
+                        <FluentInput readOnly value={buyer.fullName} className="mda-input" />
                       </DetailRow>
                       <DetailRow label="Email" required>
-                        <FluentInput readOnly value={staff.email} className="mda-input" />
+                        <FluentInput readOnly value={buyer.email} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Organisation Details
-                      </p>
-                      <DetailRow label="Department" required>
-                        <FluentInput readOnly value={staff.department} className="mda-input" />
+                      <DetailRow label="Phone" required>
+                        <FluentInput readOnly value={buyer.phone} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Created On">
-                        <FluentInput readOnly value={createdLabel} className="mda-input" />
+                      <DetailRow label="Interested development">
+                        <button
+                          type="button"
+                          className="dynamics-grid-link"
+                          onClick={() => onOpenDevelopment?.(buyer.interestedDevelopmentId)}
+                        >
+                          {buyer.interestedDevelopmentName}
+                        </button>
+                      </DetailRow>
+                      <DetailRow label="Development ID">
+                        <FluentInput readOnly value={buyer.interestedDevelopmentId} className="mda-input" />
                       </DetailRow>
                     </div>
                   ) : (
                     <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">No related records to show.</p>
+                      <StudentRelatedGrids
+                        studentId={buyer.interestedDevelopmentId}
+                        courseLinks={courseLinks}
+                        lecturerLinks={lecturerLinks}
+                      />
                     </div>
                   )}
                 </section>
@@ -476,7 +488,7 @@ export default function StaffDetailView({
                       </span>
                       <h3 className="mda-timeline-aside__empty-title">Get started</h3>
                       <p className="mda-timeline-aside__empty-text">
-                        Add notes, portal messages, and activities to build this staff member&apos;s timeline.
+                        Add notes, portal messages, and activities to build this buyer&apos;s timeline.
                       </p>
                       <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
                     </div>

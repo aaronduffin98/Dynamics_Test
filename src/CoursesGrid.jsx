@@ -26,6 +26,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -33,6 +34,8 @@ import {
   LinkRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   SearchRegular,
@@ -57,10 +60,14 @@ export default function CoursesGrid({
   courses,
   onOpenCourse,
   onNavigateStudents,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
   onNavigateStaff,
+  onNavigateSalesStaff,
   onNavigateApplications,
-  onNavigateCourses,
   onNavigateDepartments,
+  onNavigateCourses,
   onNavigateLecturers,
   sitemapCollapsed = false,
   onToggleSitemap,
@@ -262,13 +269,37 @@ export default function CoursesGrid({
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
+                <BuildingRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
               </button>
             </li>
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>

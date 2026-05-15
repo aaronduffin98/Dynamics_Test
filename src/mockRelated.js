@@ -1,5 +1,5 @@
 /**
- * Mock relational data for Student ↔ Courses ↔ Lecturers (prototype only).
+ * Mock relational data for list/detail prototypes (course links and lecturer assignments unused for developments).
  */
 
 export const mockCourses = [
@@ -74,61 +74,11 @@ export const mockLecturers = [
   },
 ];
 
-/** studentId → courseIds[] */
-export const studentCourseLinks = {
-  STU10001: ["CRS-COMP101", "CRS-MATH200"],
-  STU10002: ["CRS-PHY150", "CRS-ENG220"],
-  STU10003: ["CRS-COMP101"],
-  STU10004: ["CRS-BUS110", "CRS-STAT105"],
-  STU10005: ["CRS-MATH200"],
-  STU10006: ["CRS-ENG220", "CRS-COMP101", "CRS-STAT105"],
-  STU10007: ["CRS-PHY150", "CRS-MATH200"],
-  STU10008: [],
-  STU10009: ["CRS-COMP101", "CRS-STAT105"],
-  STU10010: ["CRS-MATH200", "CRS-ENG220"],
-  STU10011: ["CRS-PHY150"],
-  STU10012: ["CRS-BUS110"],
-  STU10013: ["CRS-ENG220", "CRS-PHY150"],
-  STU10014: ["CRS-COMP101", "CRS-MATH200", "CRS-STAT105"],
-  STU10015: ["CRS-BUS110", "CRS-COMP101"],
-  STU10016: ["CRS-STAT105"],
-  STU10017: ["CRS-MATH200", "CRS-PHY150"],
-  STU10018: ["CRS-ENG220"],
-  STU10019: ["CRS-COMP101", "CRS-BUS110"],
-  STU10020: ["CRS-PHY150", "CRS-ENG220", "CRS-STAT105"],
-  STU10021: ["CRS-MATH200"],
-  STU10022: ["CRS-COMP101", "CRS-STAT105"],
-  STU10023: ["CRS-BUS110", "CRS-ENG220"],
-  STU10024: [],
-};
+/** studentId → courseIds[] (developments prototype: no course links) */
+export const studentCourseLinks = {};
 
-/** studentId → lecturerId (assigned lecturer) */
-export const studentLecturerLink = {
-  STU10001: "LEC-1001",
-  STU10002: "LEC-1003",
-  STU10003: "LEC-1001",
-  STU10004: "LEC-1002",
-  STU10005: "LEC-1002",
-  STU10006: "LEC-1004",
-  STU10007: "LEC-1003",
-  STU10008: "LEC-1004",
-  STU10009: "LEC-1001",
-  STU10010: "LEC-1004",
-  STU10011: "LEC-1003",
-  STU10012: "LEC-1002",
-  STU10013: "LEC-1004",
-  STU10014: "LEC-1001",
-  STU10015: "LEC-1002",
-  STU10016: "LEC-1003",
-  STU10017: "LEC-1003",
-  STU10018: "LEC-1004",
-  STU10019: "LEC-1002",
-  STU10020: "LEC-1004",
-  STU10021: "LEC-1001",
-  STU10022: "LEC-1001",
-  STU10023: "LEC-1002",
-  STU10024: "LEC-1003",
-};
+/** studentId → lecturerId (developments prototype: no lecturer assignments) */
+export const studentLecturerLink = {};
 
 function normalizeStudentKey(studentId) {
   return String(studentId).replace(/-/g, "");

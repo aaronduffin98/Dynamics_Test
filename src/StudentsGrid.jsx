@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  Avatar,
   Button,
   DataGrid,
   DataGridBody,
@@ -33,6 +32,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -40,6 +40,8 @@ import {
   LinkRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   SearchRegular,
@@ -47,24 +49,18 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import {
-  getAssignedLecturer,
-  getCoursesForStudent,
-  studentCourseLinks,
-  studentLecturerLink,
-} from "./mockRelated.js";
 import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
 /** Saved-view options for the Dynamics-style view title picker (UI prototype). */
 const STUDENT_VIEWS = [
-  { id: "active", label: "Active Students", isDefault: true },
-  { id: "flagged", label: "Active Students — Flagged", isDefault: false },
-  { id: "lastMonth", label: "Students created last month", isDefault: false },
-  { id: "older", label: "Students inactive 2+ terms", isDefault: false },
-  { id: "inactive", label: "Inactive students", isDefault: false },
-  { id: "mine", label: "My students", isDefault: false },
+  { id: "active", label: "Active developments", isDefault: true },
+  { id: "flagged", label: "Active developments — flagged", isDefault: false },
+  { id: "lastMonth", label: "Developments created last month", isDefault: false },
+  { id: "older", label: "Developments in planning 12+ months", isDefault: false },
+  { id: "inactive", label: "Completed developments", isDefault: false },
+  { id: "mine", label: "My developments", isDefault: false },
 ];
 
 function statusClass(status) {
@@ -76,48 +72,17 @@ function StatusCell({ status }) {
   return <span className={statusClass(status)}>{status}</span>;
 }
 
-function OwnerCell({ name }) {
-  return (
-    <span className="dynamics-owner-cell">
-      <Avatar name={name} size={24} color="colorful" />
-      <span className="dynamics-owner-cell__name">{name}</span>
-    </span>
-  );
-}
-
-function LecturerCell({ name }) {
-  if (!name) {
-    return <span className="dynamics-grid-empty">—</span>;
-  }
-  return (
-    <span className="dynamics-owner-cell">
-      <Avatar name={name} size={24} color="colorful" />
-      <span className="dynamics-owner-cell__name">{name}</span>
-    </span>
-  );
-}
-
-function CoursesCell({ courses }) {
-  if (!courses || courses.length === 0) {
-    return <span className="dynamics-grid-empty">No courses</span>;
-  }
-  const label = courses.map((c) => c.courseId).join(", ");
-  const tooltip = courses.map((c) => `${c.courseId} — ${c.courseName}`).join("\n");
-  return (
-    <span className="dynamics-courses-cell" title={tooltip}>
-      <span className="dynamics-courses-cell__count">{courses.length}</span>
-      <span className="dynamics-courses-cell__list">{label}</span>
-    </span>
-  );
-}
-
 export default function StudentsGrid({
   students,
-  courseLinks = studentCourseLinks,
-  lecturerLinks = studentLecturerLink,
+  courseLinks: _courseLinks,
+  lecturerLinks: _lecturerLinks,
   onOpenStudent,
   onOpenApplication,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
   onNavigateStaff,
+  onNavigateSalesStaff,
   onNavigateApplications,
   onNavigateDepartments,
   onNavigateCourses,
@@ -143,26 +108,14 @@ export default function StudentsGrid({
     setSortState({ sortColumn: columnId, sortDirection: direction });
   }, []);
 
-  /** Pre-compute lecturer + courses per row so sorting/filtering can use string values directly */
-  const enrichedStudents = useMemo(() => {
-    return students.map((s) => {
-      const lecturer = getAssignedLecturer(s.studentId, lecturerLinks);
-      const courses = getCoursesForStudent(s.studentId, courseLinks);
-      return {
-        ...s,
-        lecturerName: lecturer?.name ?? "",
-        courses,
-        coursesLabel: courses.map((c) => c.courseId).join(", "),
-      };
-    });
-  }, [students, courseLinks, lecturerLinks]);
+  const enrichedStudents = useMemo(() => students.map((s) => ({ ...s })), [students]);
 
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) return enrichedStudents;
     return enrichedStudents.filter((row) =>
-      [row.studentId, row.fullName, row.email, row.status, row.ownerName, row.lecturerName, row.coursesLabel].some(
-        (v) => String(v).toLowerCase().includes(q)
+      [row.studentId, row.fullName, row.location, row.status, String(row.totalUnits ?? "")].some((v) =>
+        String(v).toLowerCase().includes(q)
       )
     );
   }, [filter, enrichedStudents]);
@@ -181,7 +134,7 @@ export default function StudentsGrid({
       createTableColumn({
         columnId: "studentId",
         compare: (a, b) => a.studentId.localeCompare(b.studentId),
-        renderHeaderCell: () => headerOf("studentId", "Student ID"),
+        renderHeaderCell: () => headerOf("studentId", "Development ID"),
         renderCell: (item) => (
           <button
             type="button"
@@ -190,7 +143,7 @@ export default function StudentsGrid({
               e.stopPropagation();
               onOpenStudent?.(item.studentId);
             }}
-            aria-label={`Open student ${item.studentId}`}
+            aria-label={`Open development ${item.studentId}`}
           >
             {item.studentId}
           </button>
@@ -207,12 +160,12 @@ export default function StudentsGrid({
         ),
       }),
       createTableColumn({
-        columnId: "email",
-        compare: (a, b) => a.email.localeCompare(b.email),
-        renderHeaderCell: () => headerOf("email", "Email"),
+        columnId: "location",
+        compare: (a, b) => a.location.localeCompare(b.location),
+        renderHeaderCell: () => headerOf("location", "Location"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.email}>
-            {item.email}
+          <TableCellLayout truncate title={item.location}>
+            {item.location}
           </TableCellLayout>
         ),
       }),
@@ -223,22 +176,14 @@ export default function StudentsGrid({
         renderCell: (item) => <StatusCell status={item.status} />,
       }),
       createTableColumn({
-        columnId: "lecturerName",
-        compare: (a, b) => a.lecturerName.localeCompare(b.lecturerName),
-        renderHeaderCell: () => headerOf("lecturerName", "Lecturer"),
-        renderCell: (item) => <LecturerCell name={item.lecturerName} />,
-      }),
-      createTableColumn({
-        columnId: "courses",
-        compare: (a, b) => a.courses.length - b.courses.length,
-        renderHeaderCell: () => headerOf("courses", "Courses"),
-        renderCell: (item) => <CoursesCell courses={item.courses} />,
-      }),
-      createTableColumn({
-        columnId: "ownerName",
-        compare: (a, b) => a.ownerName.localeCompare(b.ownerName),
-        renderHeaderCell: () => headerOf("ownerName", "Owner"),
-        renderCell: (item) => <OwnerCell name={item.ownerName} />,
+        columnId: "totalUnits",
+        compare: (a, b) => (a.totalUnits ?? 0) - (b.totalUnits ?? 0),
+        renderHeaderCell: () => headerOf("totalUnits", "Total Units"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={String(item.totalUnits ?? "")}>
+            {item.totalUnits ?? "—"}
+          </TableCellLayout>
+        ),
       }),
       createTableColumn({
         columnId: "createdOn",
@@ -254,11 +199,9 @@ export default function StudentsGrid({
     () => ({
       studentId: { defaultWidth: 160, minWidth: 80 },
       fullName: { defaultWidth: 160, minWidth: 80 },
-      email: { defaultWidth: 160, minWidth: 80 },
+      location: { defaultWidth: 160, minWidth: 80 },
       status: { defaultWidth: 160, minWidth: 80 },
-      lecturerName: { defaultWidth: 160, minWidth: 80 },
-      courses: { defaultWidth: 160, minWidth: 80 },
-      ownerName: { defaultWidth: 160, minWidth: 80 },
+      totalUnits: { defaultWidth: 160, minWidth: 80 },
       createdOn: { defaultWidth: 160, minWidth: 80 },
     }),
     []
@@ -345,13 +288,37 @@ export default function StudentsGrid({
             <li>
               <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active">
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
+                <BuildingRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
               </button>
             </li>
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -404,7 +371,7 @@ export default function StudentsGrid({
                 appearance="subtle"
                 type="button"
                 onClick={() => onOpenApplication?.()}
-                title="Create a new student via university application"
+                title="Create a new development via application"
               >
                 <span className="dynamics-cmd-btn__inner">
                   <AddRegular className="dynamics-cmd-btn__icon" />
@@ -490,7 +457,7 @@ export default function StudentsGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Students view">
+              <section className="dynamics-view" aria-label="Developments view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
@@ -540,7 +507,7 @@ export default function StudentsGrid({
                         size="small"
                         getRowId={(item) => item.studentId}
                         focusMode="composite"
-                        aria-label="Students — sortable, resizable columns"
+                        aria-label="Developments — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>

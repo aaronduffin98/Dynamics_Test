@@ -1119,3 +1119,39 @@
   color: #a4262c;
   border-color: #f1bbbc;
 }
+
+.dynamics-status--planning {
+  background: #fff4ce;
+  color: #8a6116;
+  border-color: #ffe69d;
+}
+
+.dynamics-status--active {
+  background: #dff6dd;
+  color: #107c10;
+  border-color: #c8e6c9;
+}
+
+.dynamics-status--completed {
+  background: #f3f2f1;
+  color: #605e5c;
+  border-color: #edebe9;
+}
+
+.dynamics-status--available {
+  background: #dff6dd;
+  color: #107c10;
+  border-color: #c8e6c9;
+}
+
+.dynamics-status--reserved {
+  background: #fff4ce;
+  color: #8a6116;
+  border-color: #ffe69d;
+}
+
+.dynamics-status--sold {
+  background: #f3f2f1;
+  color: #605e5c;
+  border-color: #edebe9;
+}

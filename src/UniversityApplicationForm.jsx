@@ -9,6 +9,7 @@ import {
   ChevronDownRegular,
   ClockRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   HomeRegular,
   LineHorizontal3Regular,
@@ -16,6 +17,8 @@ import {
   PenRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   QuestionCircleRegular,
@@ -56,10 +59,10 @@ function schoolDivisionForRecordId(recordId) {
 function allocateStudentId(existingStudents) {
   let max = 10000;
   for (const s of existingStudents) {
-    const m = /^STU-(\d+)$/.exec(s.studentId);
+    const m = /^DEV-(\d+)$/.exec(s.studentId);
     if (m) max = Math.max(max, parseInt(m[1], 10));
   }
-  return `STU-${String(max + 1).padStart(5, "0")}`;
+  return `DEV-${String(max + 1).padStart(5, "0")}`;
 }
 
 function DetailRow({ label, required, alignTop, error, children }) {
@@ -115,7 +118,11 @@ export default function UniversityApplicationForm({
   onSubmit,
   onCancel,
   onNavigateStudents,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
   onNavigateStaff,
+  onNavigateSalesStaff,
   onNavigateDepartments,
   onNavigateCourses,
   onNavigateLecturers,
@@ -125,7 +132,7 @@ export default function UniversityApplicationForm({
   const [activeTab, setActiveTab] = useState("general");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [location, setLocation] = useState("");
   const [selectedCourses, setSelectedCourses] = useState(() => new Set());
   const [lecturerId, setLecturerId] = useState("");
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
@@ -155,42 +162,39 @@ export default function UniversityApplicationForm({
     const msg = {};
     if (!firstName.trim()) msg.firstName = "Enter a first name.";
     if (!lastName.trim()) msg.lastName = "Enter a last name.";
-    if (!email.trim()) msg.email = "Enter an email address.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) msg.email = "Enter a valid email.";
-    if (selectedCourses.size === 0) msg.courses = "Select at least one course.";
-    if (!lecturerId) msg.lecturer = "Select an assigned lecturer.";
+    if (!location.trim()) msg.location = "Enter a location.";
     return msg;
-  }, [attemptedSubmit, firstName, lastName, email, selectedCourses.size, lecturerId]);
+  }, [attemptedSubmit, firstName, lastName, location]);
 
   const runSubmit = useCallback(() => {
     setAttemptedSubmit(true);
     if (!firstName.trim()) return;
     if (!lastName.trim()) return;
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return;
-    if (selectedCourses.size === 0) return;
-    if (!lecturerId) return;
+    if (!location.trim()) return;
 
-    const lecturer = mockLecturers.find((l) => l.lecturerId === lecturerId);
     const studentId = allocateStudentId(existingStudents);
+    const lecturer = lecturerId ? mockLecturers.find((l) => l.lecturerId === lecturerId) : null;
     const student = {
       studentId,
       fullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
-      email: email.trim(),
-      status: "Submitted",
-      ownerName: lecturer?.name ?? "Admissions Office",
+      location: location.trim(),
+      region: location.trim().split(",")[0]?.trim() || location.trim(),
+      status: "Planning",
+      totalUnits: 0,
+      ownerName: lecturer?.name ?? PROGRAM_COORDINATOR_NAME,
       createdOn: new Date(),
     };
 
     onSubmit({
       student,
       courseIds: [...selectedCourses],
-      lecturerId,
+      lecturerId: lecturerId || "",
     });
   }, [
     existingStudents,
     firstName,
     lastName,
-    email,
+    location,
     selectedCourses,
     lecturerId,
     onSubmit,
@@ -293,13 +297,37 @@ export default function UniversityApplicationForm({
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
+                <BuildingRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
               </button>
             </li>
             <li>
               <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
                 <PeopleTeamRegular className="dynamics-sitemap__icon" />
                 <span className="dynamics-sitemap__label">Staff</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -361,7 +389,7 @@ export default function UniversityApplicationForm({
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-unsaved">Not saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Student</p>
+                    <p className="mda-record-header__subtitle">Development</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
@@ -440,26 +468,24 @@ export default function UniversityApplicationForm({
                           className="mda-input"
                         />
                       </DetailRow>
-                      <DetailRow label="Campus email" required error={validationMessage.email}>
+                      <DetailRow label="Location" required error={validationMessage.location}>
                         <FluentInput
-                          type="email"
-                          value={email}
-                          onChange={(_, d) => setEmail(d.value)}
-                          placeholder="name@example.edu"
-                          autoComplete="email"
+                          value={location}
+                          onChange={(_, d) => setLocation(d.value)}
+                          placeholder="City, region, country"
                           className="mda-input"
                         />
                       </DetailRow>
-                      <DetailRow label="Student ID">
+                      <DetailRow label="Development ID">
                         <FluentInput readOnly value={previewId} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Enrollment status">
-                        <FluentInput readOnly value="Draft" className="mda-input" />
+                      <DetailRow label="Status">
+                        <FluentInput readOnly value="Planning" className="mda-input" />
                       </DetailRow>
                       <DetailRow label="Record created">
                         <FluentInput readOnly value={createdLabel} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Faculty advisor" required error={validationMessage.lecturer}>
+                      <DetailRow label="Faculty advisor" error={validationMessage.lecturer}>
                         <div className="mda-detail-row__owner">
                           {selectedLecturer ? (
                             <Avatar name={selectedLecturer.name} size={20} color="colorful" />
@@ -468,7 +494,7 @@ export default function UniversityApplicationForm({
                             className="mda-select mda-app-advisor-select"
                             value={lecturerId}
                             onChange={(e) => setLecturerId(e.target.value)}
-                            aria-required="true"
+                            aria-required="false"
                           >
                             <option value="">Select faculty advisor…</option>
                             {mockLecturers.map((l) => (
