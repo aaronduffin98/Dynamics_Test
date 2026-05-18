@@ -17,6 +17,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -26,6 +27,8 @@ import {
   PeopleRegular,
   PeopleTeamRegular,
   PersonAddRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   ProhibitedRegular,
@@ -38,43 +41,19 @@ import {
   TableRegular,
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
-import StudentRelatedGrids from "./StudentRelatedGrids.jsx";
-import { PROGRAM_COORDINATOR_NAME } from "./programCoordinator.js";
-import { getAssignedLecturer, getCoursesForStudent } from "./mockRelated.js";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
-
-const dateLong = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "long",
-  timeStyle: "short",
-});
 
 const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
 });
 
-/** Owning academic division — varies by record for a realistic college prototype */
-const SCHOOL_DIVISIONS = [
-  "College of Arts & Humanities",
-  "School of Science & Engineering",
-  "School of Business & Economics",
-  "College of Social Sciences & Education",
-];
+const priceFmt = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
-function schoolDivisionForStudent(studentId) {
-  const key = String(studentId).replace(/\D/g, "") || "0";
-  const n = key.split("").reduce((acc, d) => acc + Number(d), 0);
-  return SCHOOL_DIVISIONS[n % SCHOOL_DIVISIONS.length];
-}
-
-function splitFullName(fullName) {
-  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { firstName: "", lastName: "" };
-  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
-  return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-}
-
-/** Horizontal label-left field row used inside the Dynamics detail form */
 function DetailRow({ label, required, alignTop, children }) {
   return (
     <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""}`}>
@@ -92,7 +71,6 @@ function DetailRow({ label, required, alignTop, children }) {
   );
 }
 
-/** Power Apps record header — value/link on top, caption (Base, Manager, …) below */
 function HeaderSummaryField({ primary, secondary, variant = "default", showAvatar, avatarName }) {
   const text = primary ?? "—";
   const primaryEl =
@@ -117,39 +95,21 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
   );
 }
 
-export default function StudentDetailView({
-  student,
+export default function PropertyDetailView({
+  property,
   onBack,
-  courseLinks,
-  lecturerLinks,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateApplications,
-  onNavigateDepartments,
-  onNavigateCourses,
-  onNavigateLecturers,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
+  onOpenDevelopment,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const { firstName, lastName } = splitFullName(student.fullName);
-  const createdLabel = useMemo(() => dateLong.format(student.createdOn), [student.createdOn]);
-  const createdShort = useMemo(() => dateShort.format(student.createdOn), [student.createdOn]);
-
-  const lecturer = useMemo(
-    () => getAssignedLecturer(student.studentId, lecturerLinks),
-    [student.studentId, lecturerLinks]
-  );
-  const courses = useMemo(
-    () => getCoursesForStudent(student.studentId, courseLinks),
-    [student.studentId, courseLinks]
-  );
-
-  const coursesLabel = courses.length === 0
-    ? "—"
-    : courses.map((c) => `${c.courseId} — ${c.courseName}`).join("; ");
-
-  const schoolDivision = useMemo(() => schoolDivisionForStudent(student.studentId), [student.studentId]);
+  const createdShort = useMemo(() => dateShort.format(property.createdOn), [property.createdOn]);
+  const priceLabel = useMemo(() => priceFmt.format(property.price ?? 0), [property.price]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -162,7 +122,7 @@ export default function StudentDetailView({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -224,48 +184,36 @@ export default function StudentDetailView({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -275,7 +223,7 @@ export default function StudentDetailView({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main mda-record-main">
           <div className="mda-record-commandbar" role="toolbar" aria-label="Record commands">
@@ -360,29 +308,23 @@ export default function StudentDetailView({
                 <header className="mda-record-header mda-record-header--detail">
                   <div className="mda-record-header__main">
                     <h2 id="mda-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
-                      <span className="mda-record-header__title-id">{student.studentId}</span>
+                      <span className="mda-record-header__title-id">{property.propertyId}</span>
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Student</p>
+                    <p className="mda-record-header__subtitle">Property</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={schoolDivision} secondary="Base" />
+                      <HeaderSummaryField primary={property.developmentRegion ?? "—"} secondary="Region" />
                       <HeaderSummaryField
-                        primary={PROGRAM_COORDINATOR_NAME}
+                        primary={property.developmentName}
                         secondary="Program coordinator"
                         variant="link"
                         showAvatar
-                        avatarName={PROGRAM_COORDINATOR_NAME}
+                        avatarName={property.developmentName}
                       />
-                      <HeaderSummaryField
-                        primary={lecturer?.name ?? "—"}
-                        secondary="Faculty advisor"
-                        variant={lecturer?.name ? "link" : "default"}
-                        showAvatar={Boolean(lecturer?.name)}
-                        avatarName={lecturer?.name}
-                      />
+                      <HeaderSummaryField primary={priceLabel} secondary="List price" />
                     </div>
                     <button
                       type="button"
@@ -424,115 +366,91 @@ export default function StudentDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Student details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Property details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
-                      <DetailRow label="First name" required>
-                        <FluentInput readOnly value={firstName} className="mda-input" />
+                      <DetailRow label="Property ID" required>
+                        <FluentInput readOnly value={property.propertyId} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Last name" required>
-                        <FluentInput readOnly value={lastName} className="mda-input" />
+                      <DetailRow label="Type" required>
+                        <FluentInput readOnly value={property.type} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Campus email" required>
-                        <FluentInput readOnly value={student.email} className="mda-input" />
+                      <DetailRow label="Bedrooms" required>
+                        <FluentInput readOnly value={String(property.bedrooms ?? "")} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Student ID">
-                        <FluentInput readOnly value={student.studentId} className="mda-input" />
+                      <DetailRow label="Price" required>
+                        <FluentInput readOnly value={priceLabel} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Enrollment status">
-                        <FluentInput readOnly value={student.status} className="mda-input" />
+                      <DetailRow label="Status" required>
+                        <FluentInput readOnly value={property.status} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Record created">
-                        <FluentInput readOnly value={createdLabel} className="mda-input" />
+                      <DetailRow label="Development">
+                        <button
+                          type="button"
+                          className="dynamics-grid-link"
+                          onClick={() => onOpenDevelopment?.(property.developmentId)}
+                        >
+                          {property.developmentName}
+                        </button>
                       </DetailRow>
-                      <DetailRow label="Faculty advisor">
-                        {lecturer ? (
-                          <div className="mda-detail-row__owner">
-                            <Avatar name={lecturer.name} size={20} color="colorful" />
-                            <FluentInput readOnly value={lecturer.name} className="mda-input mda-detail-row__owner-input" />
-                          </div>
-                        ) : (
-                          <FluentInput readOnly value="Not assigned" className="mda-input" />
-                        )}
-                      </DetailRow>
-                      <DetailRow label="Records owner">
-                        <div className="mda-detail-row__owner">
-                          <Avatar name={student.ownerName} size={20} color="colorful" />
-                          <FluentInput readOnly value={student.ownerName} className="mda-input mda-detail-row__owner-input" />
-                        </div>
-                      </DetailRow>
-                      <DetailRow label="Enrolled courses" alignTop>
-                        <FluentInput
-                          readOnly
-                          value={coursesLabel}
-                          className="mda-input"
-                          title={coursesLabel}
-                        />
-                      </DetailRow>
-                      <DetailRow label="Course load (count)">
-                        <FluentInput readOnly value={String(courses.length)} className="mda-input" />
+                      <DetailRow label="Development ID">
+                        <FluentInput readOnly value={property.developmentId} className="mda-input" />
                       </DetailRow>
                     </div>
                   ) : (
                     <div className="mda-detail-related">
-                      <StudentRelatedGrids
-                        studentId={student.studentId}
-                        courseLinks={courseLinks}
-                        lecturerLinks={lecturerLinks}
-                      />
+                      <p className="mda-related-placeholder__text">Related records appear here in a full model-driven app.</p>
                     </div>
                   )}
                 </section>
 
                 <aside className="mda-record-card mda-record-card--timeline" aria-label="Timeline">
-                <div className="mda-timeline-aside__bar">
-                  <span className="mda-timeline-aside__title">Timeline</span>
-                  <div className="mda-timeline-aside__actions">
-                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
-                      <AddRegular />
-                    </button>
-                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
-                      <FilterRegular />
-                    </button>
-                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
-                      <ArrowSortRegular />
-                    </button>
-                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
-                      <MoreHorizontalRegular />
-                    </button>
+                  <div className="mda-timeline-aside__bar">
+                    <span className="mda-timeline-aside__title">Timeline</span>
+                    <div className="mda-timeline-aside__actions">
+                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
+                        <AddRegular />
+                      </button>
+                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
+                        <FilterRegular />
+                      </button>
+                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
+                        <ArrowSortRegular />
+                      </button>
+                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
+                        <MoreHorizontalRegular />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="mda-timeline-aside__body">
-                  <FluentInput
-                    placeholder="Search timeline"
-                    contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                    className="mda-timeline-aside__search"
-                    disabled
-                    appearance="outline"
-                    aria-label="Search timeline"
-                  />
-                  <FluentInput
-                    placeholder="Enter a note…"
-                    contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                    className="mda-timeline-aside__note"
-                    disabled
-                    appearance="outline"
-                    aria-label="Note"
-                  />
-                  <div className="mda-timeline-aside__empty">
-                    <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
-                      <DocumentRegular fontSize={32} />
-                    </span>
-                    <h3 className="mda-timeline-aside__empty-title">Get started</h3>
-                    <p className="mda-timeline-aside__empty-text">
-                      Add notes, portal messages, and activities to build this student&apos;s timeline.
-                    </p>
-                    <p className="mda-timeline-aside__empty-meta">
-                      Record created on {createdShort}
-                    </p>
+                  <div className="mda-timeline-aside__body">
+                    <FluentInput
+                      placeholder="Search timeline"
+                      contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
+                      className="mda-timeline-aside__search"
+                      disabled
+                      appearance="outline"
+                      aria-label="Search timeline"
+                    />
+                    <FluentInput
+                      placeholder="Enter a note…"
+                      contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
+                      className="mda-timeline-aside__note"
+                      disabled
+                      appearance="outline"
+                      aria-label="Note"
+                    />
+                    <div className="mda-timeline-aside__empty">
+                      <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
+                        <DocumentRegular fontSize={32} />
+                      </span>
+                      <h3 className="mda-timeline-aside__empty-title">Get started</h3>
+                      <p className="mda-timeline-aside__empty-text">
+                        Add notes, portal messages, and activities to build this property&apos;s timeline.
+                      </p>
+                      <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
+                    </div>
                   </div>
-                </div>
-              </aside>
+                </aside>
               </div>
             </div>
           </div>

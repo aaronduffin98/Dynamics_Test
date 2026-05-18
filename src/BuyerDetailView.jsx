@@ -17,6 +17,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -26,6 +27,8 @@ import {
   PeopleRegular,
   PeopleTeamRegular,
   PersonAddRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   ProhibitedRegular,
@@ -40,11 +43,6 @@ import {
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
-
-const dateLong = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "long",
-  timeStyle: "short",
-});
 
 const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -91,21 +89,20 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
   );
 }
 
-export default function CourseDetailView({
-  course,
+export default function BuyerDetailView({
+  buyer,
   onBack,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateApplications,
-  onNavigateCourses,
-  onNavigateDepartments,
-  onNavigateLecturers,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
+  onOpenDevelopment,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const createdLabel = useMemo(() => dateLong.format(course.createdOn), [course.createdOn]);
-  const createdShort = useMemo(() => dateShort.format(course.createdOn), [course.createdOn]);
+  const createdShort = useMemo(() => dateShort.format(buyer.createdOn), [buyer.createdOn]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -118,7 +115,7 @@ export default function CourseDetailView({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -180,48 +177,36 @@ export default function CourseDetailView({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -231,7 +216,7 @@ export default function CourseDetailView({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main mda-record-main">
           <div className="mda-record-commandbar" role="toolbar" aria-label="Record commands">
@@ -312,21 +297,27 @@ export default function CourseDetailView({
 
           <div className="mda-record-workspace">
             <div className="mda-record-form mda-detail-page-layout">
-              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-course-detail-card-title">
+              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-detail-card-title">
                 <header className="mda-record-header mda-record-header--detail">
                   <div className="mda-record-header__main">
-                    <h2 id="mda-course-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
-                      <span className="mda-record-header__title-id">{course.courseId}</span>
+                    <h2 id="mda-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
+                      <span className="mda-record-header__title-id">{buyer.buyerId}</span>
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Course</p>
+                    <p className="mda-record-header__subtitle">Buyer</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={course.department} secondary="Department" />
-                      <HeaderSummaryField primary={course.courseName} secondary="Name" />
-                      <HeaderSummaryField primary={course.duration} secondary="Duration" />
+                      <HeaderSummaryField primary={buyer.developmentRegion ?? "—"} secondary="Region" />
+                      <HeaderSummaryField
+                        primary={buyer.fullName}
+                        secondary="Program coordinator"
+                        variant="link"
+                        showAvatar
+                        avatarName={buyer.fullName}
+                      />
+                      <HeaderSummaryField primary={buyer.email ?? "—"} secondary="Email" />
                     </div>
                     <button
                       type="button"
@@ -368,37 +359,37 @@ export default function CourseDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Course details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Buyer details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "0 0 4px" }}>
-                        Course Information
-                      </p>
-                      <DetailRow label="Course Name" required>
-                        <FluentInput readOnly value={course.courseName} className="mda-input" />
+                      <DetailRow label="Buyer ID" required>
+                        <FluentInput readOnly value={buyer.buyerId} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Duration" required>
-                        <FluentInput readOnly value={course.duration} className="mda-input" />
+                      <DetailRow label="Name" required>
+                        <FluentInput readOnly value={buyer.fullName} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Credits" required>
-                        <FluentInput readOnly value={String(course.credits)} className="mda-input" />
+                      <DetailRow label="Email" required>
+                        <FluentInput readOnly value={buyer.email} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Organisation
-                      </p>
-                      <DetailRow label="Department" required>
-                        <FluentInput readOnly value={course.department} className="mda-input" />
+                      <DetailRow label="Phone" required>
+                        <FluentInput readOnly value={buyer.phone} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Meta Details
-                      </p>
-                      <DetailRow label="Created On">
-                        <FluentInput readOnly value={createdLabel} className="mda-input" />
+                      <DetailRow label="Interested development">
+                        <button
+                          type="button"
+                          className="dynamics-grid-link"
+                          onClick={() => onOpenDevelopment?.(buyer.interestedDevelopmentId)}
+                        >
+                          {buyer.interestedDevelopmentName}
+                        </button>
+                      </DetailRow>
+                      <DetailRow label="Development ID">
+                        <FluentInput readOnly value={buyer.interestedDevelopmentId} className="mda-input" />
                       </DetailRow>
                     </div>
                   ) : (
                     <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">No related records to show.</p>
+                      <p className="mda-related-placeholder__text">Related records appear here in a full model-driven app.</p>
                     </div>
                   )}
                 </section>
@@ -444,7 +435,7 @@ export default function CourseDetailView({
                       </span>
                       <h3 className="mda-timeline-aside__empty-title">Get started</h3>
                       <p className="mda-timeline-aside__empty-text">
-                        Add notes, portal messages, and activities to build this course&apos;s timeline.
+                        Add notes, portal messages, and activities to build this buyer&apos;s timeline.
                       </p>
                       <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
                     </div>

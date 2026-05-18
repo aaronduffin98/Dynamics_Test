@@ -1,0 +1,132 @@
+/**
+ * Mock Developments (housing projects) for the Cairn property-management prototype.
+ */
+const STATUS_MAP = {
+  Draft: "Planning",
+  Submitted: "Active",
+  Accepted: "Active",
+  Rejected: "Completed",
+};
+
+const UNIVERSITY_STATUSES = ["Draft", "Submitted", "Accepted", "Rejected"];
+
+const DEVELOPMENT_NAMES = [
+  "Harbor Point Residences",
+  "Cedar Lane Townhomes",
+  "Riverside Quarter Phase 2",
+  "Summit View Apartments",
+  "Oakwood Gardens",
+  "Meridian Wharf",
+  "Greenfield Meadows",
+  "Lakeside Mews",
+  "Brookstone Village",
+  "Ashford Heights",
+  "Northgate Studios",
+  "Castleview Ridge",
+  "Granite Works",
+  "Southbank Reach",
+  "Elm Park Terraces",
+  "Beacon Hill Flats",
+  "Willow Creek Estate",
+  "Highfield Gardens",
+  "Silverline Heights",
+  "Parklands Square",
+  "Harbour View",
+  "Millstone Park",
+  "Foxglove Lane",
+  "Stonebridge Court",
+];
+
+const LOCATIONS = [
+  "Dublin",
+  "Cork",
+  "Limerick",
+  "Galway",
+  "Waterford",
+  "Dublin",
+  "Kildare",
+  "Wicklow",
+  "Meath",
+  "Cork",
+  "Belfast",
+  "Kilkenny",
+  "Dublin",
+  "Cork",
+  "Limerick",
+  "Dublin",
+  "Galway",
+  "Cork",
+  "Dublin",
+  "Kildare",
+  "Dún Laoghaire",
+  "Naas",
+  "Dundalk",
+  "Tralee",
+];
+
+const OWNERS = [
+  "Neil Smith",
+  "Frank Brooks",
+  "Neil Smith",
+  "Frank Brooks",
+  "Neil Smith",
+  "Frank Brooks",
+  "Elena Vasquez",
+  "Frank Brooks",
+  "James Okonkwo",
+  "Neil Smith",
+  "Frank Brooks",
+  "Elena Vasquez",
+  "James Okonkwo",
+  "Neil Smith",
+  "Frank Brooks",
+  "James Okonkwo",
+  "Elena Vasquez",
+  "Neil Smith",
+  "Frank Brooks",
+  "James Okonkwo",
+  "Neil Smith",
+  "Elena Vasquez",
+  "Frank Brooks",
+  "James Okonkwo",
+];
+
+const CREATED_DATES = [
+  "2026-01-15T09:30:00.000Z",
+  "2026-02-02T11:05:00.000Z",
+  "2026-02-18T16:42:00.000Z",
+  "2026-03-01T08:12:00.000Z",
+  "2026-03-04T13:20:00.000Z",
+  "2026-03-09T10:00:00.000Z",
+  "2026-03-10T15:33:00.000Z",
+  "2026-03-11T09:15:00.000Z",
+  "2026-03-12T14:22:00.000Z",
+  "2026-03-14T09:48:00.000Z",
+  "2026-03-15T11:30:00.000Z",
+  "2026-03-17T08:55:00.000Z",
+  "2026-03-18T16:10:00.000Z",
+  "2026-03-20T13:45:00.000Z",
+  "2026-03-22T09:00:00.000Z",
+  "2026-03-24T10:25:00.000Z",
+  "2026-03-26T15:18:00.000Z",
+  "2026-03-28T11:00:00.000Z",
+  "2026-03-30T14:50:00.000Z",
+  "2026-04-02T09:35:00.000Z",
+  "2026-04-05T16:05:00.000Z",
+  "2026-04-07T10:20:00.000Z",
+  "2026-04-09T12:42:00.000Z",
+  "2026-04-11T08:30:00.000Z",
+];
+
+export const mockDevelopments = DEVELOPMENT_NAMES.map((name, i) => {
+  const uniStatus = UNIVERSITY_STATUSES[i % UNIVERSITY_STATUSES.length];
+  return {
+    developmentId: `DEV-${String(10001 + i).padStart(5, "0")}`,
+    name,
+    location: LOCATIONS[i],
+    status: STATUS_MAP[uniStatus],
+    totalUnits: 72 + (i % 12) * 18,
+    ownerName: OWNERS[i],
+    createdOn: new Date(CREATED_DATES[i]),
+  };
+});

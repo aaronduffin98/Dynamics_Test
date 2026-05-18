@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - Dynamics-Prototype-Cairn-V2
   workflow_dispatch:
 
 permissions:

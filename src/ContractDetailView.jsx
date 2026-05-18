@@ -17,6 +17,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -25,7 +26,9 @@ import {
   PenRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
   PersonAddRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   ProhibitedRegular,
@@ -91,25 +94,20 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
   );
 }
 
-export default function LecturerDetailView({
-  lecturer,
+export default function ContractDetailView({
+  contract,
   onBack,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateLecturers,
-  onNavigateApplications,
-  onNavigateCourses,
-  onNavigateDepartments,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const createdLabel = useMemo(() => dateLong.format(lecturer.createdOn), [lecturer.createdOn]);
-  const createdShort = useMemo(() => dateShort.format(lecturer.createdOn), [lecturer.createdOn]);
-  const courseNamesList = useMemo(
-    () => (lecturer.taughtCourses ?? []).map((c) => c.courseName).join("; "),
-    [lecturer.taughtCourses]
-  );
+  const contractDateLabel = useMemo(() => dateLong.format(contract.contractDate), [contract.contractDate]);
+  const createdShort = useMemo(() => dateShort.format(contract.createdOn), [contract.createdOn]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -122,7 +120,7 @@ export default function LecturerDetailView({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -184,48 +182,36 @@ export default function LecturerDetailView({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -235,7 +221,7 @@ export default function LecturerDetailView({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main mda-record-main">
           <div className="mda-record-commandbar" role="toolbar" aria-label="Record commands">
@@ -316,21 +302,21 @@ export default function LecturerDetailView({
 
           <div className="mda-record-workspace">
             <div className="mda-record-form mda-detail-page-layout">
-              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-lecturer-detail-card-title">
+              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-contract-detail-card-title">
                 <header className="mda-record-header mda-record-header--detail">
                   <div className="mda-record-header__main">
-                    <h2 id="mda-lecturer-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
-                      <span className="mda-record-header__title-id">{lecturer.lecturerId}</span>
+                    <h2 id="mda-contract-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
+                      <span className="mda-record-header__title-id">{contract.contractId}</span>
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Lecturer</p>
+                    <p className="mda-record-header__subtitle">Contract</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={lecturer.department} secondary="Department" />
-                      <HeaderSummaryField primary={lecturer.name} secondary="Name" showAvatar avatarName={lecturer.name} />
-                      <HeaderSummaryField primary={lecturer.email} secondary="Work email" variant="link" />
+                      <HeaderSummaryField primary={contract.buyerName} secondary="Buyer" />
+                      <HeaderSummaryField primary={contract.propertyLabel} secondary="Property" />
+                      <HeaderSummaryField primary={contract.status} secondary="Status" />
                     </div>
                     <button
                       type="button"
@@ -372,35 +358,35 @@ export default function LecturerDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Lecturer details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Contract details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
                       <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "0 0 4px" }}>
-                        Personal Information
+                        Basic Information
                       </p>
-                      <DetailRow label="Name" required>
-                        <FluentInput readOnly value={lecturer.name} className="mda-input" />
+                      <DetailRow label="Contract ID" required>
+                        <FluentInput readOnly value={contract.contractId} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Email" required>
-                        <FluentInput readOnly value={lecturer.email} className="mda-input" />
+                      <DetailRow label="Status" required>
+                        <FluentInput readOnly value={contract.status} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Organisation
-                      </p>
-                      <DetailRow label="Department" required>
-                        <FluentInput readOnly value={lecturer.department} className="mda-input" />
+                      <DetailRow label="Date" required>
+                        <FluentInput readOnly value={contractDateLabel} className="mda-input" />
                       </DetailRow>
                       <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Teaching Responsibilities
+                        Relationships
                       </p>
-                      <DetailRow label="Courses" alignTop>
-                        <FluentInput readOnly value={courseNamesList} className="mda-input" />
+                      <DetailRow label="Buyer" required>
+                        <FluentInput readOnly value={contract.buyerName} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Meta Details
-                      </p>
-                      <DetailRow label="Created On">
-                        <FluentInput readOnly value={createdLabel} className="mda-input" />
+                      <DetailRow label="Buyer ID">
+                        <FluentInput readOnly value={contract.buyerId} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Property" required>
+                        <FluentInput readOnly value={contract.propertyLabel} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Property ID">
+                        <FluentInput readOnly value={contract.propertyId} className="mda-input" />
                       </DetailRow>
                     </div>
                   ) : (
@@ -451,7 +437,7 @@ export default function LecturerDetailView({
                       </span>
                       <h3 className="mda-timeline-aside__empty-title">Get started</h3>
                       <p className="mda-timeline-aside__empty-text">
-                        Add notes, portal messages, and activities to build this lecturer&apos;s timeline.
+                        Add notes, portal messages, and activities to build this contract&apos;s timeline.
                       </p>
                       <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
                     </div>

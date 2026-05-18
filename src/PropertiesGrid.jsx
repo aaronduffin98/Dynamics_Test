@@ -8,6 +8,12 @@ import {
   DataGridHeaderCell,
   DataGridRow,
   Input,
+  Menu,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
   TableCellLayout,
   createTableColumn,
 } from "@fluentui/react-components";
@@ -26,6 +32,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -33,6 +40,8 @@ import {
   LinkRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   SearchRegular,
@@ -40,52 +49,53 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
+import { DynamicsViewTitlePicker, HeaderMenu } from "./dynamicsListViewHelpers.jsx";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
-const LECTURER_VIEWS = [
-  { id: "all", label: "All Lecturers", isDefault: true },
-  { id: "fulltime", label: "Full-time faculty", isDefault: false },
-  { id: "stem", label: "STEM departments", isDefault: false },
-  { id: "arts", label: "Arts & Humanities", isDefault: false },
-  { id: "business", label: "Business & Economics", isDefault: false },
-  { id: "active", label: "Active lecturers", isDefault: false },
+const PROPERTY_VIEWS = [
+  { id: "active", label: "Active listings", isDefault: true },
+  { id: "flagged", label: "Properties — flagged", isDefault: false },
+  { id: "lastMonth", label: "Properties added last month", isDefault: false },
+  { id: "older", label: "Listed 90+ days", isDefault: false },
+  { id: "inactive", label: "Sold properties", isDefault: false },
+  { id: "mine", label: "My properties", isDefault: false },
 ];
 
-function CoursesCell({ courses }) {
-  if (!courses || courses.length === 0) {
-    return <span className="dynamics-grid-empty">No courses</span>;
-  }
-  const label = courses.map((c) => c.courseId).join(", ");
-  const tooltip = courses.map((c) => `${c.courseId} — ${c.courseName}`).join("\n");
-  return (
-    <span className="dynamics-courses-cell" title={tooltip}>
-      <span className="dynamics-courses-cell__count">{courses.length}</span>
-      <span className="dynamics-courses-cell__list">{label}</span>
-    </span>
-  );
+const priceFmt = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
+
+function statusClass(status) {
+  const key = String(status).toLowerCase();
+  return `dynamics-status dynamics-status--${key}`;
 }
 
-export default function LecturersGrid({
-  lecturers,
-  onOpenLecturer,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateLecturers,
-  onNavigateApplications,
-  onNavigateCourses,
-  onNavigateDepartments,
+function StatusCell({ status }) {
+  return <span className={statusClass(status)}>{status}</span>;
+}
+
+export default function PropertiesGrid({
+  properties,
+  onOpenProperty,
+  onOpenNewProperty,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [filter, setFilter] = useState("");
   const [sortState, setSortState] = useState({
-    sortColumn: "createdOn",
+    sortColumn: "price",
     sortDirection: "descending",
   });
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  const [selectedViewId, setSelectedViewId] = useState(LECTURER_VIEWS[0].id);
+  const [selectedViewId, setSelectedViewId] = useState(PROPERTY_VIEWS[0].id);
 
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
@@ -95,16 +105,22 @@ export default function LecturersGrid({
     setSortState({ sortColumn: columnId, sortDirection: direction });
   }, []);
 
+  const enrichedProperties = useMemo(() => properties.map((p) => ({ ...p })), [properties]);
+
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return lecturers;
-    return lecturers.filter((row) => {
-      const courseTokens = (row.taughtCourses ?? []).flatMap((c) => [c.courseId, c.courseName]);
-      return [row.lecturerId, row.name, row.email, row.department, row.coursesLabel, ...courseTokens].some((v) =>
-        String(v).toLowerCase().includes(q)
-      );
-    });
-  }, [filter, lecturers]);
+    if (!q) return enrichedProperties;
+    return enrichedProperties.filter((row) =>
+      [
+        row.propertyId,
+        row.developmentName,
+        row.type,
+        String(row.bedrooms ?? ""),
+        priceFmt.format(row.price ?? 0),
+        row.status,
+      ].some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [filter, enrichedProperties]);
 
   const columns = useMemo(() => {
     const headerOf = (columnId, label) => (
@@ -118,76 +134,83 @@ export default function LecturersGrid({
     );
     return [
       createTableColumn({
-        columnId: "lecturerId",
-        compare: (a, b) => a.lecturerId.localeCompare(b.lecturerId),
-        renderHeaderCell: () => headerOf("lecturerId", "Lecturer ID"),
+        columnId: "propertyId",
+        compare: (a, b) => a.propertyId.localeCompare(b.propertyId),
+        renderHeaderCell: () => headerOf("propertyId", "Property ID"),
         renderCell: (item) => (
           <button
             type="button"
             className="dynamics-grid-link"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenLecturer?.(item.lecturerId);
+              onOpenProperty?.(item.propertyId);
             }}
-            aria-label={`Open lecturer ${item.lecturerId}`}
+            aria-label={`Open property ${item.propertyId}`}
           >
-            {item.lecturerId}
+            {item.propertyId}
           </button>
         ),
       }),
       createTableColumn({
-        columnId: "name",
-        compare: (a, b) => a.name.localeCompare(b.name),
-        renderHeaderCell: () => headerOf("name", "Name"),
+        columnId: "developmentName",
+        compare: (a, b) => a.developmentName.localeCompare(b.developmentName),
+        renderHeaderCell: () => headerOf("developmentName", "Development"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.name}>
-            {item.name}
+          <TableCellLayout truncate title={item.developmentName}>
+            {item.developmentName}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "email",
-        compare: (a, b) => a.email.localeCompare(b.email),
-        renderHeaderCell: () => headerOf("email", "Email"),
+        columnId: "type",
+        compare: (a, b) => a.type.localeCompare(b.type),
+        renderHeaderCell: () => headerOf("type", "Type"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.email}>
-            {item.email}
+          <TableCellLayout truncate title={item.type}>
+            {item.type}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "department",
-        compare: (a, b) => a.department.localeCompare(b.department),
-        renderHeaderCell: () => headerOf("department", "Department"),
+        columnId: "bedrooms",
+        compare: (a, b) => (a.bedrooms ?? 0) - (b.bedrooms ?? 0),
+        renderHeaderCell: () => headerOf("bedrooms", "Bedrooms"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.department}>
-            {item.department}
+          <TableCellLayout truncate title={String(item.bedrooms ?? "")}>
+            {item.bedrooms ?? "—"}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "courses",
-        compare: (a, b) => a.coursesLabel.localeCompare(b.coursesLabel),
-        renderHeaderCell: () => headerOf("courses", "Courses"),
-        renderCell: (item) => <CoursesCell courses={item.taughtCourses} />,
+        columnId: "price",
+        compare: (a, b) => (a.price ?? 0) - (b.price ?? 0),
+        renderHeaderCell: () => headerOf("price", "Price"),
+        renderCell: (item) => {
+          const label = priceFmt.format(item.price ?? 0);
+          return (
+            <TableCellLayout truncate title={label}>
+              {label}
+            </TableCellLayout>
+          );
+        },
       }),
       createTableColumn({
-        columnId: "createdOn",
-        compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => headerOf("createdOn", "Created On"),
-        renderCell: (item) => dateFmt.format(item.createdOn),
+        columnId: "status",
+        compare: (a, b) => a.status.localeCompare(b.status),
+        renderHeaderCell: () => headerOf("status", "Status"),
+        renderCell: (item) => <StatusCell status={item.status} />,
       }),
     ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenLecturer]);
+  }, [sortState, handleColumnSort, onMockCommand, onOpenProperty]);
 
   const columnSizingOptions = useMemo(
     () => ({
-      lecturerId: { defaultWidth: 140, minWidth: 80 },
-      name: { defaultWidth: 160, minWidth: 80 },
-      email: { defaultWidth: 180, minWidth: 80 },
-      department: { defaultWidth: 160, minWidth: 80 },
-      courses: { defaultWidth: 200, minWidth: 80 },
-      createdOn: { defaultWidth: 160, minWidth: 80 },
+      propertyId: { defaultWidth: 160, minWidth: 80 },
+      developmentName: { defaultWidth: 160, minWidth: 80 },
+      type: { defaultWidth: 160, minWidth: 80 },
+      bedrooms: { defaultWidth: 160, minWidth: 80 },
+      price: { defaultWidth: 160, minWidth: 80 },
+      status: { defaultWidth: 160, minWidth: 80 },
     }),
     []
   );
@@ -203,7 +226,7 @@ export default function LecturersGrid({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -259,48 +282,36 @@ export default function LecturersGrid({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -310,36 +321,31 @@ export default function LecturersGrid({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main">
           <div className="dynamics-main-surface">
             <div className="dynamics-surface-card dynamics-surface-card--command">
               <div className="dynamics-commandbar" role="toolbar" aria-label="Commands">
                 <div className="dynamics-commandbar__scroll">
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — chart view"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — chart view">
                     <span className="dynamics-cmd-btn__inner">
                       <DataBarVerticalRegular className="dynamics-cmd-btn__icon" />
                       <span>Show Chart</span>
                     </span>
                   </Button>
-                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new lecturer">
+                  <Button
+                    appearance="subtle"
+                    type="button"
+                    onClick={() => onOpenNewProperty?.()}
+                    title="Create a new property"
+                  >
                     <span className="dynamics-cmd-btn__inner">
                       <AddRegular className="dynamics-cmd-btn__icon" />
                       <span>New</span>
                     </span>
                   </Button>
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — delete options"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — delete options">
                     <span className="dynamics-cmd-btn__inner">
                       <DeleteRegular className="dynamics-cmd-btn__icon" />
                       <span>Delete</span>
@@ -413,11 +419,11 @@ export default function LecturersGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Lecturers view">
+              <section className="dynamics-view" aria-label="Properties view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
-                      views={LECTURER_VIEWS}
+                      views={PROPERTY_VIEWS}
                       selectedViewId={selectedViewId}
                       onSelectViewId={setSelectedViewId}
                       onManageViews={onMockCommand}
@@ -461,9 +467,9 @@ export default function LecturersGrid({
                         selectedItems={selectedRows}
                         onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
-                        getRowId={(item) => item.lecturerId}
+                        getRowId={(item) => item.propertyId}
                         focusMode="composite"
-                        aria-label="Lecturers — sortable, resizable columns"
+                        aria-label="Properties — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
@@ -479,7 +485,7 @@ export default function LecturersGrid({
                               selectionCell={{ "aria-label": "Select row" }}
                               onDoubleClick={(e) => {
                                 e.preventDefault();
-                                onOpenLecturer?.(item.lecturerId);
+                                onOpenProperty?.(item.propertyId);
                               }}
                             >
                               {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}

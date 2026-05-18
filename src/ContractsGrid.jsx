@@ -26,6 +26,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -33,6 +34,8 @@ import {
   LinkRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   SearchRegular,
@@ -44,34 +47,33 @@ import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } f
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
-const DEPARTMENT_VIEWS = [
-  { id: "all", label: "All Departments", isDefault: true },
-  { id: "science", label: "Science & Engineering", isDefault: false },
-  { id: "business", label: "Business & Economics", isDefault: false },
-  { id: "arts", label: "Arts & Humanities", isDefault: false },
-  { id: "social", label: "Social Sciences & Education", isDefault: false },
-  { id: "active", label: "Active departments", isDefault: false },
+const CONTRACT_VIEWS = [
+  { id: "all", label: "All Contracts", isDefault: true },
+  { id: "draft", label: "Draft", isDefault: false },
+  { id: "signed", label: "Signed", isDefault: false },
+  { id: "completed", label: "Completed", isDefault: false },
+  { id: "mine", label: "My contracts", isDefault: false },
 ];
 
-export default function DepartmentsGrid({
-  departments,
-  onOpenDepartment,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateApplications,
-  onNavigateDepartments,
-  onNavigateCourses,
-  onNavigateLecturers,
+export default function ContractsGrid({
+  contracts,
+  onOpenContract,
+  onOpenNewContract,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [filter, setFilter] = useState("");
   const [sortState, setSortState] = useState({
-    sortColumn: "createdOn",
+    sortColumn: "contractDate",
     sortDirection: "descending",
   });
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  const [selectedViewId, setSelectedViewId] = useState(DEPARTMENT_VIEWS[0].id);
+  const [selectedViewId, setSelectedViewId] = useState(CONTRACT_VIEWS[0].id);
 
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
@@ -83,16 +85,13 @@ export default function DepartmentsGrid({
 
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return departments;
-    return departments.filter((row) =>
-      [
-        row.departmentId,
-        row.departmentName,
-        row.faculty,
-        row.headOfDepartment,
-      ].some((v) => String(v).toLowerCase().includes(q))
+    if (!q) return contracts;
+    return contracts.filter((row) =>
+      [row.contractId, row.buyerName, row.buyerId, row.propertyLabel, row.propertyId, row.status, dateFmt.format(row.contractDate)].some((v) =>
+        String(v).toLowerCase().includes(q)
+      )
     );
-  }, [filter, departments]);
+  }, [filter, contracts]);
 
   const columns = useMemo(() => {
     const headerOf = (columnId, label) => (
@@ -106,69 +105,69 @@ export default function DepartmentsGrid({
     );
     return [
       createTableColumn({
-        columnId: "departmentId",
-        compare: (a, b) => a.departmentId.localeCompare(b.departmentId),
-        renderHeaderCell: () => headerOf("departmentId", "Department ID"),
+        columnId: "contractId",
+        compare: (a, b) => a.contractId.localeCompare(b.contractId),
+        renderHeaderCell: () => headerOf("contractId", "Contract ID"),
         renderCell: (item) => (
           <button
             type="button"
             className="dynamics-grid-link"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenDepartment?.(item.departmentId);
+              onOpenContract?.(item.contractId);
             }}
-            aria-label={`Open department ${item.departmentId}`}
+            aria-label={`Open contract ${item.contractId}`}
           >
-            {item.departmentId}
+            {item.contractId}
           </button>
         ),
       }),
       createTableColumn({
-        columnId: "departmentName",
-        compare: (a, b) => a.departmentName.localeCompare(b.departmentName),
-        renderHeaderCell: () => headerOf("departmentName", "Department Name"),
+        columnId: "buyerName",
+        compare: (a, b) => a.buyerName.localeCompare(b.buyerName),
+        renderHeaderCell: () => headerOf("buyerName", "Buyer"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.departmentName}>
-            {item.departmentName}
+          <TableCellLayout truncate title={item.buyerName}>
+            {item.buyerName}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "faculty",
-        compare: (a, b) => a.faculty.localeCompare(b.faculty),
-        renderHeaderCell: () => headerOf("faculty", "Faculty"),
+        columnId: "propertyLabel",
+        compare: (a, b) => a.propertyLabel.localeCompare(b.propertyLabel),
+        renderHeaderCell: () => headerOf("propertyLabel", "Property"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.faculty}>
-            {item.faculty}
+          <TableCellLayout truncate title={item.propertyLabel}>
+            {item.propertyLabel}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "headOfDepartment",
-        compare: (a, b) => a.headOfDepartment.localeCompare(b.headOfDepartment),
-        renderHeaderCell: () => headerOf("headOfDepartment", "Head of Department"),
+        columnId: "status",
+        compare: (a, b) => a.status.localeCompare(b.status),
+        renderHeaderCell: () => headerOf("status", "Status"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.headOfDepartment}>
-            {item.headOfDepartment}
+          <TableCellLayout truncate title={item.status}>
+            {item.status}
           </TableCellLayout>
         ),
       }),
       createTableColumn({
-        columnId: "createdOn",
-        compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => headerOf("createdOn", "Created On"),
-        renderCell: (item) => dateFmt.format(item.createdOn),
+        columnId: "contractDate",
+        compare: (a, b) => a.contractDate.getTime() - b.contractDate.getTime(),
+        renderHeaderCell: () => headerOf("contractDate", "Date"),
+        renderCell: (item) => dateFmt.format(item.contractDate),
       }),
     ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenDepartment]);
+  }, [sortState, handleColumnSort, onMockCommand, onOpenContract]);
 
   const columnSizingOptions = useMemo(
     () => ({
-      departmentId: { defaultWidth: 160, minWidth: 80 },
-      departmentName: { defaultWidth: 160, minWidth: 80 },
-      faculty: { defaultWidth: 160, minWidth: 80 },
-      headOfDepartment: { defaultWidth: 160, minWidth: 80 },
-      createdOn: { defaultWidth: 160, minWidth: 80 },
+      contractId: { defaultWidth: 160, minWidth: 80 },
+      buyerName: { defaultWidth: 180, minWidth: 80 },
+      propertyLabel: { defaultWidth: 260, minWidth: 80 },
+      status: { defaultWidth: 140, minWidth: 80 },
+      contractDate: { defaultWidth: 180, minWidth: 80 },
     }),
     []
   );
@@ -184,7 +183,7 @@ export default function DepartmentsGrid({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -240,48 +239,36 @@ export default function DepartmentsGrid({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -291,36 +278,26 @@ export default function DepartmentsGrid({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main">
           <div className="dynamics-main-surface">
             <div className="dynamics-surface-card dynamics-surface-card--command">
               <div className="dynamics-commandbar" role="toolbar" aria-label="Commands">
                 <div className="dynamics-commandbar__scroll">
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — chart view"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — chart view">
                     <span className="dynamics-cmd-btn__inner">
                       <DataBarVerticalRegular className="dynamics-cmd-btn__icon" />
                       <span>Show Chart</span>
                     </span>
                   </Button>
-                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new department">
+                  <Button appearance="subtle" type="button" onClick={() => onOpenNewContract?.()} title="Create a new contract">
                     <span className="dynamics-cmd-btn__inner">
                       <AddRegular className="dynamics-cmd-btn__icon" />
                       <span>New</span>
                     </span>
                   </Button>
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — delete options"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — delete options">
                     <span className="dynamics-cmd-btn__inner">
                       <DeleteRegular className="dynamics-cmd-btn__icon" />
                       <span>Delete</span>
@@ -394,11 +371,11 @@ export default function DepartmentsGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Departments view">
+              <section className="dynamics-view" aria-label="Contracts view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
-                      views={DEPARTMENT_VIEWS}
+                      views={CONTRACT_VIEWS}
                       selectedViewId={selectedViewId}
                       onSelectViewId={setSelectedViewId}
                       onManageViews={onMockCommand}
@@ -442,9 +419,9 @@ export default function DepartmentsGrid({
                         selectedItems={selectedRows}
                         onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
-                        getRowId={(item) => item.departmentId}
+                        getRowId={(item) => item.contractId}
                         focusMode="composite"
-                        aria-label="Departments — sortable, resizable columns"
+                        aria-label="Contracts — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
@@ -460,7 +437,7 @@ export default function DepartmentsGrid({
                               selectionCell={{ "aria-label": "Select row" }}
                               onDoubleClick={(e) => {
                                 e.preventDefault();
-                                onOpenDepartment?.(item.departmentId);
+                                onOpenContract?.(item.contractId);
                               }}
                             >
                               {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}

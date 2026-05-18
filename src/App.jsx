@@ -1,353 +1,229 @@
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
-import { useCallback, useMemo, useState } from "react";
-import CourseDetailView from "./CourseDetailView.jsx";
-import CoursesGrid from "./CoursesGrid.jsx";
-import DepartmentDetailView from "./DepartmentDetailView.jsx";
-import DepartmentsGrid from "./DepartmentsGrid.jsx";
-import LecturerDetailView from "./LecturerDetailView.jsx";
-import LecturersGrid from "./LecturersGrid.jsx";
-import StaffDetailView from "./StaffDetailView.jsx";
-import StaffGrid from "./StaffGrid.jsx";
-import StudentDetailView from "./StudentDetailView.jsx";
-import StudentsGrid from "./StudentsGrid.jsx";
-import UniversityApplicationForm from "./UniversityApplicationForm.jsx";
-import { mockDepartments } from "./mockDepartments.js";
-import { mockInstitutionCourses } from "./mockInstitutionCourses.js";
-import { mockInstitutionLecturers } from "./mockInstitutionLecturers.js";
-import { studentCourseLinks, studentLecturerLink } from "./mockRelated.js";
-import { mockStaff } from "./mockStaff.js";
-import { mockStudents } from "./mockStudents.js";
-
-function studentRecordKey(studentId) {
-  return String(studentId).replace(/-/g, "");
-}
+import { useCallback, useEffect, useMemo, useState } from "react";
+import BuyerDetailView from "./BuyerDetailView.jsx";
+import BuyersGrid from "./BuyersGrid.jsx";
+import ContractDetailView from "./ContractDetailView.jsx";
+import ContractsGrid from "./ContractsGrid.jsx";
+import DevelopmentDetailView from "./DevelopmentDetailView.jsx";
+import DevelopmentsGrid from "./DevelopmentsGrid.jsx";
+import NewBuyerForm from "./NewBuyerForm.jsx";
+import NewContractForm from "./NewContractForm.jsx";
+import NewDevelopmentForm from "./NewDevelopmentForm.jsx";
+import NewPropertyForm from "./NewPropertyForm.jsx";
+import NewSalesStaffForm from "./NewSalesStaffForm.jsx";
+import PropertiesGrid from "./PropertiesGrid.jsx";
+import PropertyDetailView from "./PropertyDetailView.jsx";
+import SalesStaffDetailView from "./SalesStaffDetailView.jsx";
+import SalesStaffGrid from "./SalesStaffGrid.jsx";
+import { mockBuyers } from "./mockBuyers.js";
+import { mockContracts } from "./mockContracts.js";
+import { mockDevelopments } from "./mockDevelopments.js";
+import { mockProperties } from "./mockProperties.js";
+import { mockSalesStaff } from "./mockSalesStaff.js";
 
 export default function App() {
-  const [students, setStudents] = useState(() => [...mockStudents]);
-  const [staff] = useState(() => [...mockStaff]);
-  const [departments] = useState(() => [...mockDepartments]);
-  const [institutionCourses] = useState(() => [...mockInstitutionCourses]);
-  const [institutionLecturers] = useState(() => [...mockInstitutionLecturers]);
-  const [courseLinksByStudent, setCourseLinksByStudent] = useState(() => ({
-    ...studentCourseLinks,
-  }));
-  const [lecturerByStudent, setLecturerByStudent] = useState(() => ({
-    ...studentLecturerLink,
-  }));
+  const [developments, setDevelopments] = useState(() => [...mockDevelopments]);
+  const [properties, setProperties] = useState(() => [...mockProperties]);
+  const [buyers, setBuyers] = useState(() => [...mockBuyers]);
+  const [contracts, setContracts] = useState(() => [...mockContracts]);
+  const [salesStaff, setSalesStaff] = useState(() => [...mockSalesStaff]);
 
-  /** students | studentDetail | staffList | staffDetail | lecturers | lecturerDetail | courses | courseDetail | departments | departmentDetail | application */
-  const [view, setView] = useState({ type: "students" });
-
+  const [view, setView] = useState({ type: "developments" });
   const [sitemapCollapsed, setSitemapCollapsed] = useState(false);
   const toggleSitemap = useCallback(() => {
     setSitemapCollapsed((prev) => !prev);
   }, []);
 
-  const detailStudent = useMemo(() => {
-    if (view.type !== "studentDetail") return null;
-    return students.find((s) => s.studentId === view.studentId) ?? null;
-  }, [view, students]);
+  const detailDevelopment = useMemo(() => {
+    if (view.type !== "developmentDetail") return null;
+    return developments.find((d) => d.developmentId === view.developmentId) ?? null;
+  }, [view, developments]);
 
-  const detailStaff = useMemo(() => {
-    if (view.type !== "staffDetail") return null;
-    return staff.find((s) => s.staffId === view.staffId) ?? null;
-  }, [view, staff]);
+  useEffect(() => {
+    if (view.type === "developmentDetail" && !detailDevelopment) {
+      setView({ type: "developments" });
+    }
+  }, [view.type, view.developmentId, detailDevelopment]);
 
-  const detailDepartment = useMemo(() => {
-    if (view.type !== "departmentDetail") return null;
-    return departments.find((d) => d.departmentId === view.departmentId) ?? null;
-  }, [view, departments]);
+  const detailProperty = useMemo(() => {
+    if (view.type !== "propertyDetail") return null;
+    return properties.find((p) => p.propertyId === view.propertyId) ?? null;
+  }, [view, properties]);
 
-  const detailCourse = useMemo(() => {
-    if (view.type !== "courseDetail") return null;
-    return institutionCourses.find((c) => c.courseId === view.courseId) ?? null;
-  }, [view, institutionCourses]);
+  const detailBuyer = useMemo(() => {
+    if (view.type !== "buyerDetail") return null;
+    return buyers.find((b) => b.buyerId === view.buyerId) ?? null;
+  }, [view, buyers]);
 
-  const lecturersEnriched = useMemo(
-    () =>
-      institutionLecturers.map((l) => {
-        const taughtCourses = l.taughtCourseIds
-          .map((id) => institutionCourses.find((c) => c.courseId === id))
-          .filter(Boolean);
-        return {
-          ...l,
-          taughtCourses,
-          coursesLabel: taughtCourses.map((c) => c.courseId).join(", "),
-        };
-      }),
-    [institutionLecturers, institutionCourses]
-  );
+  const detailContract = useMemo(() => {
+    if (view.type !== "contractDetail") return null;
+    return contracts.find((c) => c.contractId === view.contractId) ?? null;
+  }, [view, contracts]);
 
-  const detailLecturer = useMemo(() => {
-    if (view.type !== "lecturerDetail") return null;
-    return lecturersEnriched.find((x) => x.lecturerId === view.lecturerId) ?? null;
-  }, [view, lecturersEnriched]);
+  const detailSalesStaff = useMemo(() => {
+    if (view.type !== "salesStaffDetail") return null;
+    return salesStaff.find((s) => s.salesStaffId === view.salesStaffId) ?? null;
+  }, [view, salesStaff]);
 
-  const openStudent = useCallback((studentId) => {
-    setView({ type: "studentDetail", studentId });
+  const goDevelopmentsList = useCallback(() => setView({ type: "developments" }), []);
+  const goPropertiesList = useCallback(() => setView({ type: "properties" }), []);
+  const goBuyersList = useCallback(() => setView({ type: "buyers" }), []);
+  const goContractsList = useCallback(() => setView({ type: "contracts" }), []);
+  const goSalesStaffList = useCallback(() => setView({ type: "salesStaffList" }), []);
+
+  const openDevelopment = useCallback((developmentId) => {
+    setView({ type: "developmentDetail", developmentId });
+  }, []);
+  const closeDevelopment = useCallback(() => setView({ type: "developments" }), []);
+
+  const openProperty = useCallback((propertyId) => {
+    setView({ type: "propertyDetail", propertyId });
+  }, []);
+  const closeProperty = useCallback(() => setView({ type: "properties" }), []);
+
+  const openBuyer = useCallback((buyerId) => {
+    setView({ type: "buyerDetail", buyerId });
+  }, []);
+  const closeBuyer = useCallback(() => setView({ type: "buyers" }), []);
+
+  const openContract = useCallback((contractId) => {
+    setView({ type: "contractDetail", contractId });
+  }, []);
+  const closeContract = useCallback(() => setView({ type: "contracts" }), []);
+
+  const openSalesStaff = useCallback((salesStaffId) => {
+    setView({ type: "salesStaffDetail", salesStaffId });
+  }, []);
+  const closeSalesStaff = useCallback(() => setView({ type: "salesStaffList" }), []);
+
+  const openNewDevelopment = useCallback(() => setView({ type: "newDevelopment" }), []);
+  const openNewProperty = useCallback(() => setView({ type: "newProperty" }), []);
+  const openNewBuyer = useCallback(() => setView({ type: "newBuyer" }), []);
+  const openNewContract = useCallback(() => setView({ type: "newContract" }), []);
+  const openNewSalesStaff = useCallback(() => setView({ type: "newSalesStaff" }), []);
+
+  const cancelNewDevelopment = useCallback(() => setView({ type: "developments" }), []);
+  const cancelNewProperty = useCallback(() => setView({ type: "properties" }), []);
+  const cancelNewBuyer = useCallback(() => setView({ type: "buyers" }), []);
+  const cancelNewContract = useCallback(() => setView({ type: "contracts" }), []);
+  const cancelNewSalesStaff = useCallback(() => setView({ type: "salesStaffList" }), []);
+
+  const handleCreateDevelopment = useCallback((record) => {
+    setDevelopments((prev) => [...prev, record]);
+    setView({ type: "developments" });
   }, []);
 
-  const closeStudent = useCallback(() => {
-    setView({ type: "students" });
+  const handleCreateProperty = useCallback((record) => {
+    setProperties((prev) => [...prev, record]);
+    setView({ type: "properties" });
   }, []);
 
-  const openStaff = useCallback((staffId) => {
-    setView({ type: "staffDetail", staffId });
+  const handleCreateBuyer = useCallback((record) => {
+    setBuyers((prev) => [...prev, record]);
+    setView({ type: "buyers" });
   }, []);
 
-  const closeStaff = useCallback(() => {
-    setView({ type: "staffList" });
+  const handleCreateContract = useCallback((record) => {
+    setContracts((prev) => [...prev, record]);
+    setView({ type: "contracts" });
   }, []);
 
-  const goStudentsList = useCallback(() => {
-    setView({ type: "students" });
+  const handleCreateSalesStaff = useCallback((record) => {
+    setSalesStaff((prev) => [...prev, record]);
+    setView({ type: "salesStaffList" });
   }, []);
 
-  const goStaffList = useCallback(() => {
-    setView({ type: "staffList" });
-  }, []);
-
-  const goDepartmentsList = useCallback(() => {
-    setView({ type: "departments" });
-  }, []);
-
-  const openDepartment = useCallback((departmentId) => {
-    setView({ type: "departmentDetail", departmentId });
-  }, []);
-
-  const closeDepartment = useCallback(() => {
-    setView({ type: "departments" });
-  }, []);
-
-  const goCoursesList = useCallback(() => {
-    setView({ type: "courses" });
-  }, []);
-
-  const openCourse = useCallback((courseId) => {
-    setView({ type: "courseDetail", courseId });
-  }, []);
-
-  const closeCourse = useCallback(() => {
-    setView({ type: "courses" });
-  }, []);
-
-  const goLecturersList = useCallback(() => {
-    setView({ type: "lecturers" });
-  }, []);
-
-  const openLecturer = useCallback((lecturerId) => {
-    setView({ type: "lecturerDetail", lecturerId });
-  }, []);
-
-  const closeLecturer = useCallback(() => {
-    setView({ type: "lecturers" });
-  }, []);
-
-  const openApplication = useCallback(() => {
-    setView({ type: "application" });
-  }, []);
-
-  const cancelApplication = useCallback(() => {
-    setView({ type: "students" });
-  }, []);
-
-  const handleApplicationSubmit = useCallback(
-    ({ student, courseIds, lecturerId }) => {
-      const key = studentRecordKey(student.studentId);
-      setStudents((prev) => [...prev, student]);
-      setCourseLinksByStudent((prev) => ({ ...prev, [key]: courseIds }));
-      setLecturerByStudent((prev) => ({ ...prev, [key]: lecturerId }));
-      setView({ type: "students" });
-    },
-    []
-  );
+  const nav = {
+    onNavigateDevelopments: goDevelopmentsList,
+    onNavigateProperties: goPropertiesList,
+    onNavigateBuyers: goBuyersList,
+    onNavigateContracts: goContractsList,
+    onNavigateSalesStaff: goSalesStaffList,
+    sitemapCollapsed,
+    onToggleSitemap: toggleSitemap,
+  };
 
   return (
     <FluentProvider theme={webLightTheme}>
-      {view.type === "application" ? (
-        <UniversityApplicationForm
-          existingStudents={students}
-          onSubmit={handleApplicationSubmit}
-          onCancel={cancelApplication}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      {view.type === "newDevelopment" ? (
+        <NewDevelopmentForm
+          existingDevelopments={developments}
+          onSubmit={handleCreateDevelopment}
+          onCancel={cancelNewDevelopment}
+          {...nav}
         />
-      ) : detailStudent ? (
-        <StudentDetailView
-          student={detailStudent}
-          onBack={closeStudent}
-          courseLinks={courseLinksByStudent}
-          lecturerLinks={lecturerByStudent}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : view.type === "newProperty" ? (
+        <NewPropertyForm
+          existingProperties={properties}
+          developments={developments}
+          onSubmit={handleCreateProperty}
+          onCancel={cancelNewProperty}
+          {...nav}
         />
-      ) : detailStaff ? (
-        <StaffDetailView
-          staff={detailStaff}
-          onBack={closeStaff}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : view.type === "newBuyer" ? (
+        <NewBuyerForm
+          existingBuyers={buyers}
+          developments={developments}
+          onSubmit={handleCreateBuyer}
+          onCancel={cancelNewBuyer}
+          {...nav}
         />
-      ) : detailDepartment ? (
-        <DepartmentDetailView
-          department={detailDepartment}
-          onBack={closeDepartment}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : view.type === "newContract" ? (
+        <NewContractForm
+          existingContracts={contracts}
+          buyers={buyers}
+          properties={properties}
+          onSubmit={handleCreateContract}
+          onCancel={cancelNewContract}
+          {...nav}
         />
-      ) : detailCourse ? (
-        <CourseDetailView
-          course={detailCourse}
-          onBack={closeCourse}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : view.type === "newSalesStaff" ? (
+        <NewSalesStaffForm
+          existingSalesStaff={salesStaff}
+          developments={developments}
+          onSubmit={handleCreateSalesStaff}
+          onCancel={cancelNewSalesStaff}
+          {...nav}
         />
-      ) : detailLecturer ? (
-        <LecturerDetailView
-          lecturer={detailLecturer}
-          onBack={closeLecturer}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : detailDevelopment ? (
+        <DevelopmentDetailView development={detailDevelopment} onBack={closeDevelopment} {...nav} />
+      ) : detailProperty ? (
+        <PropertyDetailView
+          property={detailProperty}
+          onBack={closeProperty}
+          onOpenDevelopment={openDevelopment}
+          {...nav}
         />
-      ) : view.type === "lecturerDetail" ? (
-        <LecturersGrid
-          lecturers={lecturersEnriched}
-          onOpenLecturer={openLecturer}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : detailBuyer ? (
+        <BuyerDetailView buyer={detailBuyer} onBack={closeBuyer} {...nav} />
+      ) : detailContract ? (
+        <ContractDetailView contract={detailContract} onBack={closeContract} {...nav} />
+      ) : detailSalesStaff ? (
+        <SalesStaffDetailView salesStaff={detailSalesStaff} onBack={closeSalesStaff} {...nav} />
+      ) : view.type === "properties" ? (
+        <PropertiesGrid
+          properties={properties}
+          onOpenProperty={openProperty}
+          onOpenNewProperty={openNewProperty}
+          {...nav}
         />
-      ) : view.type === "courseDetail" ? (
-        <CoursesGrid
-          courses={institutionCourses}
-          onOpenCourse={openCourse}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
-        />
-      ) : view.type === "departmentDetail" ? (
-        <DepartmentsGrid
-          departments={departments}
-          onOpenDepartment={openDepartment}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
-        />
-      ) : view.type === "staffList" ? (
-        <StaffGrid
-          staff={staff}
-          onOpenStaff={openStaff}
-          onNavigateStudents={goStudentsList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
-        />
-      ) : view.type === "departments" ? (
-        <DepartmentsGrid
-          departments={departments}
-          onOpenDepartment={openDepartment}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
-        />
-      ) : view.type === "courses" ? (
-        <CoursesGrid
-          courses={institutionCourses}
-          onOpenCourse={openCourse}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
-        />
-      ) : view.type === "lecturers" ? (
-        <LecturersGrid
-          lecturers={lecturersEnriched}
-          onOpenLecturer={openLecturer}
-          onNavigateStudents={goStudentsList}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+      ) : view.type === "buyers" ? (
+        <BuyersGrid buyers={buyers} onOpenBuyer={openBuyer} onOpenNewBuyer={openNewBuyer} {...nav} />
+      ) : view.type === "contracts" ? (
+        <ContractsGrid contracts={contracts} onOpenContract={openContract} onOpenNewContract={openNewContract} {...nav} />
+      ) : view.type === "salesStaffList" ? (
+        <SalesStaffGrid
+          salesStaff={salesStaff}
+          onOpenSalesStaff={openSalesStaff}
+          onOpenNewSalesStaff={openNewSalesStaff}
+          {...nav}
         />
       ) : (
-        <StudentsGrid
-          students={students}
-          courseLinks={courseLinksByStudent}
-          lecturerLinks={lecturerByStudent}
-          onOpenStudent={openStudent}
-          onOpenApplication={openApplication}
-          onNavigateStaff={goStaffList}
-          onNavigateApplications={openApplication}
-          onNavigateDepartments={goDepartmentsList}
-          onNavigateCourses={goCoursesList}
-          onNavigateLecturers={goLecturersList}
-          sitemapCollapsed={sitemapCollapsed}
-          onToggleSitemap={toggleSitemap}
+        <DevelopmentsGrid
+          developments={developments}
+          onOpenDevelopment={openDevelopment}
+          onOpenNewDevelopment={openNewDevelopment}
+          {...nav}
         />
       )}
     </FluentProvider>

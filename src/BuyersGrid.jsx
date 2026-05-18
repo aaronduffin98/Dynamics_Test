@@ -8,6 +8,12 @@ import {
   DataGridHeaderCell,
   DataGridRow,
   Input,
+  Menu,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
   TableCellLayout,
   createTableColumn,
 } from "@fluentui/react-components";
@@ -26,6 +32,7 @@ import {
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -33,6 +40,8 @@ import {
   LinkRegular,
   PeopleRegular,
   PeopleTeamRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PersonRegular,
   PinRegular,
   SearchRegular,
@@ -40,37 +49,38 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
+import { DynamicsViewTitlePicker, HeaderMenu } from "./dynamicsListViewHelpers.jsx";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
-const STAFF_VIEWS = [
-  { id: "all", label: "All Staff", isDefault: true },
-  { id: "admin", label: "Administrators", isDefault: false },
-  { id: "finance", label: "Finance", isDefault: false },
-  { id: "support", label: "Support", isDefault: false },
-  { id: "it", label: "IT", isDefault: false },
-  { id: "mine", label: "My direct reports", isDefault: false },
+const BUYER_VIEWS = [
+  { id: "active", label: "Active buyers", isDefault: true },
+  { id: "flagged", label: "Buyers — flagged", isDefault: false },
+  { id: "lastMonth", label: "Buyers added last month", isDefault: false },
+  { id: "older", label: "No contact 30+ days", isDefault: false },
+  { id: "inactive", label: "Closed leads", isDefault: false },
+  { id: "mine", label: "My buyers", isDefault: false },
 ];
 
-export default function StaffGrid({
-  staff,
-  onOpenStaff,
-  onNavigateStudents,
-  onNavigateApplications,
-  onNavigateDepartments,
-  onNavigateCourses,
-  onNavigateLecturers,
+export default function BuyersGrid({
+  buyers,
+  onOpenBuyer,
+  onOpenNewBuyer,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [filter, setFilter] = useState("");
   const [sortState, setSortState] = useState({
-    sortColumn: "createdOn",
-    sortDirection: "descending",
+    sortColumn: "fullName",
+    sortDirection: "ascending",
   });
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  const [selectedViewId, setSelectedViewId] = useState(STAFF_VIEWS[0].id);
+  const [selectedViewId, setSelectedViewId] = useState(BUYER_VIEWS[0].id);
 
   const onMockCommand = useCallback(() => {
     /* No-op until wired to create/delete/refresh APIs */
@@ -80,15 +90,17 @@ export default function StaffGrid({
     setSortState({ sortColumn: columnId, sortDirection: direction });
   }, []);
 
+  const enrichedBuyers = useMemo(() => buyers.map((b) => ({ ...b })), [buyers]);
+
   const filteredItems = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return staff;
-    return staff.filter((row) =>
-      [row.staffId, row.name, row.role, row.department, row.email].some((v) =>
+    if (!q) return enrichedBuyers;
+    return enrichedBuyers.filter((row) =>
+      [row.buyerId, row.fullName, row.email, row.phone, row.interestedDevelopmentName].some((v) =>
         String(v).toLowerCase().includes(q)
       )
     );
-  }, [filter, staff]);
+  }, [filter, enrichedBuyers]);
 
   const columns = useMemo(() => {
     const headerOf = (columnId, label) => (
@@ -102,50 +114,30 @@ export default function StaffGrid({
     );
     return [
       createTableColumn({
-        columnId: "staffId",
-        compare: (a, b) => a.staffId.localeCompare(b.staffId),
-        renderHeaderCell: () => headerOf("staffId", "Staff ID"),
+        columnId: "buyerId",
+        compare: (a, b) => a.buyerId.localeCompare(b.buyerId),
+        renderHeaderCell: () => headerOf("buyerId", "Buyer ID"),
         renderCell: (item) => (
           <button
             type="button"
             className="dynamics-grid-link"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenStaff?.(item.staffId);
+              onOpenBuyer?.(item.buyerId);
             }}
-            aria-label={`Open staff ${item.staffId}`}
+            aria-label={`Open buyer ${item.buyerId}`}
           >
-            {item.staffId}
+            {item.buyerId}
           </button>
         ),
       }),
       createTableColumn({
-        columnId: "name",
-        compare: (a, b) => a.name.localeCompare(b.name),
-        renderHeaderCell: () => headerOf("name", "Name"),
+        columnId: "fullName",
+        compare: (a, b) => a.fullName.localeCompare(b.fullName),
+        renderHeaderCell: () => headerOf("fullName", "Name"),
         renderCell: (item) => (
-          <TableCellLayout truncate title={item.name}>
-            {item.name}
-          </TableCellLayout>
-        ),
-      }),
-      createTableColumn({
-        columnId: "role",
-        compare: (a, b) => a.role.localeCompare(b.role),
-        renderHeaderCell: () => headerOf("role", "Role"),
-        renderCell: (item) => (
-          <TableCellLayout truncate title={item.role}>
-            {item.role}
-          </TableCellLayout>
-        ),
-      }),
-      createTableColumn({
-        columnId: "department",
-        compare: (a, b) => a.department.localeCompare(b.department),
-        renderHeaderCell: () => headerOf("department", "Department"),
-        renderCell: (item) => (
-          <TableCellLayout truncate title={item.department}>
-            {item.department}
+          <TableCellLayout truncate title={item.fullName}>
+            {item.fullName}
           </TableCellLayout>
         ),
       }),
@@ -160,22 +152,35 @@ export default function StaffGrid({
         ),
       }),
       createTableColumn({
-        columnId: "createdOn",
-        compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => headerOf("createdOn", "Created On"),
-        renderCell: (item) => dateFmt.format(item.createdOn),
+        columnId: "phone",
+        compare: (a, b) => a.phone.localeCompare(b.phone),
+        renderHeaderCell: () => headerOf("phone", "Phone"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.phone}>
+            {item.phone}
+          </TableCellLayout>
+        ),
+      }),
+      createTableColumn({
+        columnId: "interestedDevelopmentName",
+        compare: (a, b) => a.interestedDevelopmentName.localeCompare(b.interestedDevelopmentName),
+        renderHeaderCell: () => headerOf("interestedDevelopmentName", "Interested Development"),
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.interestedDevelopmentName}>
+            {item.interestedDevelopmentName}
+          </TableCellLayout>
+        ),
       }),
     ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenStaff]);
+  }, [sortState, handleColumnSort, onMockCommand, onOpenBuyer]);
 
   const columnSizingOptions = useMemo(
     () => ({
-      staffId: { defaultWidth: 160, minWidth: 80 },
-      name: { defaultWidth: 160, minWidth: 80 },
-      role: { defaultWidth: 160, minWidth: 80 },
-      department: { defaultWidth: 160, minWidth: 80 },
+      buyerId: { defaultWidth: 160, minWidth: 80 },
+      fullName: { defaultWidth: 160, minWidth: 80 },
       email: { defaultWidth: 160, minWidth: 80 },
-      createdOn: { defaultWidth: 160, minWidth: 80 },
+      phone: { defaultWidth: 160, minWidth: 80 },
+      interestedDevelopmentName: { defaultWidth: 160, minWidth: 80 },
     }),
     []
   );
@@ -191,7 +196,7 @@ export default function StaffGrid({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -247,48 +252,36 @@ export default function StaffGrid({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
+                    <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active">
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -298,36 +291,31 @@ export default function StaffGrid({
               </button>
             </li>
           </ul>
-        </nav>
+</nav>
 
         <main className="dynamics-main">
           <div className="dynamics-main-surface">
             <div className="dynamics-surface-card dynamics-surface-card--command">
               <div className="dynamics-commandbar" role="toolbar" aria-label="Commands">
                 <div className="dynamics-commandbar__scroll">
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — chart view"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — chart view">
                     <span className="dynamics-cmd-btn__inner">
                       <DataBarVerticalRegular className="dynamics-cmd-btn__icon" />
                       <span>Show Chart</span>
                     </span>
                   </Button>
-                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — new staff">
+                  <Button
+                    appearance="subtle"
+                    type="button"
+                    onClick={() => onOpenNewBuyer?.()}
+                    title="Create a new buyer"
+                  >
                     <span className="dynamics-cmd-btn__inner">
                       <AddRegular className="dynamics-cmd-btn__icon" />
                       <span>New</span>
                     </span>
                   </Button>
-                  <Button
-                    appearance="subtle"
-                    type="button"
-                    onClick={onMockCommand}
-                    title="Preview only — delete options"
-                  >
+                  <Button appearance="subtle" type="button" onClick={onMockCommand} title="Preview only — delete options">
                     <span className="dynamics-cmd-btn__inner">
                       <DeleteRegular className="dynamics-cmd-btn__icon" />
                       <span>Delete</span>
@@ -401,11 +389,11 @@ export default function StaffGrid({
             </div>
 
             <div className="dynamics-surface-card dynamics-surface-card--view">
-              <section className="dynamics-view" aria-label="Staff view">
+              <section className="dynamics-view" aria-label="Buyers view">
                 <div className="dynamics-view-toolbar">
                   <div className="dynamics-view-toolbar__title-wrap">
                     <DynamicsViewTitlePicker
-                      views={STAFF_VIEWS}
+                      views={BUYER_VIEWS}
                       selectedViewId={selectedViewId}
                       onSelectViewId={setSelectedViewId}
                       onManageViews={onMockCommand}
@@ -449,9 +437,9 @@ export default function StaffGrid({
                         selectedItems={selectedRows}
                         onSelectionChange={(_, data) => setSelectedRows(data.selectedItems)}
                         size="small"
-                        getRowId={(item) => item.staffId}
+                        getRowId={(item) => item.buyerId}
                         focusMode="composite"
-                        aria-label="Staff — sortable, resizable columns"
+                        aria-label="Buyers — sortable, resizable columns"
                       >
                         <DataGridHeader>
                           <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
@@ -467,7 +455,7 @@ export default function StaffGrid({
                               selectionCell={{ "aria-label": "Select row" }}
                               onDoubleClick={(e) => {
                                 e.preventDefault();
-                                onOpenStaff?.(item.staffId);
+                                onOpenBuyer?.(item.buyerId);
                               }}
                             >
                               {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}

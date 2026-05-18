@@ -10,13 +10,13 @@ import {
   ArrowClockwiseRegular,
   ArrowLeftRegular,
   ArrowSortRegular,
-  BookContactsRegular,
   BuildingRegular,
   ChevronDownRegular,
   ClockRegular,
   DeleteRegular,
   DocumentBulletListRegular,
   DocumentRegular,
+  DocumentTextRegular,
   FilterRegular,
   FlowRegular,
   HomeRegular,
@@ -24,9 +24,9 @@ import {
   MoreHorizontalRegular,
   PenRegular,
   PeopleRegular,
-  PeopleTeamRegular,
   PersonAddRegular,
-  PersonRegular,
+  PersonAccountsRegular,
+  PersonCircleRegular,
   PinRegular,
   ProhibitedRegular,
   QuestionCircleRegular,
@@ -50,6 +50,7 @@ const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
 });
 
+/** Horizontal label-left field row used inside the Dynamics detail form */
 function DetailRow({ label, required, alignTop, children }) {
   return (
     <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""}`}>
@@ -67,6 +68,7 @@ function DetailRow({ label, required, alignTop, children }) {
   );
 }
 
+/** Power Apps record header — value/link on top, caption (Base, Manager, …) below */
 function HeaderSummaryField({ primary, secondary, variant = "default", showAvatar, avatarName }) {
   const text = primary ?? "—";
   const primaryEl =
@@ -91,21 +93,20 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
   );
 }
 
-export default function DepartmentDetailView({
-  department,
+export default function DevelopmentDetailView({
+  development,
   onBack,
-  onNavigateStudents,
-  onNavigateStaff,
-  onNavigateApplications,
-  onNavigateDepartments,
-  onNavigateCourses,
-  onNavigateLecturers,
+  onNavigateDevelopments,
+  onNavigateProperties,
+  onNavigateBuyers,
+  onNavigateContracts,
+  onNavigateSalesStaff,
   sitemapCollapsed = false,
   onToggleSitemap,
 }) {
   const [activeTab, setActiveTab] = useState("general");
-  const createdLabel = useMemo(() => dateLong.format(department.createdOn), [department.createdOn]);
-  const createdShort = useMemo(() => dateShort.format(department.createdOn), [department.createdOn]);
+  const createdLabel = useMemo(() => dateLong.format(development.createdOn), [development.createdOn]);
+  const createdShort = useMemo(() => dateShort.format(development.createdOn), [development.createdOn]);
 
   return (
     <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -118,7 +119,7 @@ export default function DepartmentDetailView({
           <span className="dynamics-app-header__pipe" aria-hidden="true">
             |
           </span>
-          <span className="dynamics-app-header__app">College Portal</span>
+          <span className="dynamics-app-header__app">Property Management</span>
           <span className="dynamics-app-header__divider" aria-hidden="true" />
           <span className="dynamics-app-header__env">SANDBOX</span>
         </div>
@@ -180,48 +181,36 @@ export default function DepartmentDetailView({
               </button>
             </li>
           </ul>
-          <p className="mda-sitemap__group-label">Dashboards</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateApplications?.()}>
-                <DocumentRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Applications</span>
-              </button>
-            </li>
-          </ul>
           <p className="mda-sitemap__group-label">Administration</p>
           <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStudents?.()}>
+              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateDevelopments?.()}>
                 <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Students</span>
+                <span className="dynamics-sitemap__label">Developments</span>
               </button>
             </li>
             <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateStaff?.()}>
-                <PeopleTeamRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateLecturers?.()}>
-                <PersonRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Lecturers</span>
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Configuration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateCourses?.()}>
-                <BookContactsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Courses</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateDepartments?.()}>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
                 <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Departments</span>
+                <span className="dynamics-sitemap__label">Properties</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
+                <PersonCircleRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Buyers</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
+                <DocumentTextRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Contracts</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
+                <PersonAccountsRegular className="dynamics-sitemap__icon" />
+                <span className="dynamics-sitemap__label">Sales Staff</span>
               </button>
             </li>
             <li>
@@ -312,26 +301,25 @@ export default function DepartmentDetailView({
 
           <div className="mda-record-workspace">
             <div className="mda-record-form mda-detail-page-layout">
-              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-dept-detail-card-title">
+              <section className="mda-record-card mda-record-card--summary-band" aria-labelledby="mda-detail-card-title">
                 <header className="mda-record-header mda-record-header--detail">
                   <div className="mda-record-header__main">
-                    <h2 id="mda-dept-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
-                      <span className="mda-record-header__title-id">{department.departmentId}</span>
+                    <h2 id="mda-detail-card-title" className="mda-record-header__title mda-record-header__title--primary">
+                      <span className="mda-record-header__title-id">{development.developmentId}</span>
                       <span className="mda-record-header__title-sep"> - </span>
                       <span className="mda-record-header__title-saved">Saved</span>
                     </h2>
-                    <p className="mda-record-header__subtitle">Department</p>
+                    <p className="mda-record-header__subtitle">Development</p>
                   </div>
                   <div className="mda-record-header__summary">
                     <div className="mda-record-header__context">
-                      <HeaderSummaryField primary={department.faculty} secondary="Faculty" />
-                      <HeaderSummaryField primary={department.departmentName} secondary="Name" />
+                      <HeaderSummaryField primary={development.location} secondary="Location" />
+                      <HeaderSummaryField primary={development.status} secondary="Status" />
                       <HeaderSummaryField
-                        primary={department.headOfDepartment}
-                        secondary="Head of department"
-                        variant="link"
+                        primary={development.ownerName}
+                        secondary="Owner"
                         showAvatar
-                        avatarName={department.headOfDepartment}
+                        avatarName={development.ownerName}
                       />
                     </div>
                     <button
@@ -374,92 +362,93 @@ export default function DepartmentDetailView({
               </section>
 
               <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Department details">
+                <section className="mda-record-card mda-record-card--form" aria-label="Development details">
                   {activeTab === "general" ? (
                     <div className="mda-detail-columns">
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "0 0 4px" }}>
-                        Department Information
-                      </p>
-                      <DetailRow label="Department Name" required>
-                        <FluentInput readOnly value={department.departmentName} className="mda-input" />
+                      <DetailRow label="Name" required>
+                        <FluentInput readOnly value={development.name} className="mda-input" />
                       </DetailRow>
-                      <DetailRow label="Faculty" required>
-                        <FluentInput readOnly value={department.faculty} className="mda-input" />
+                      <DetailRow label="Location" required>
+                        <FluentInput readOnly value={development.location} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Management
-                      </p>
-                      <DetailRow label="Head of Department" required>
-                        <div className="mda-detail-row__owner">
-                          <Avatar name={department.headOfDepartment} size={20} color="colorful" />
-                          <FluentInput
-                            readOnly
-                            value={department.headOfDepartment}
-                            className="mda-input mda-detail-row__owner-input"
-                          />
-                        </div>
+                      <DetailRow label="Development ID">
+                        <FluentInput readOnly value={development.developmentId} className="mda-input" />
                       </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Meta Details
-                      </p>
-                      <DetailRow label="Created On">
+                      <DetailRow label="Status">
+                        <FluentInput readOnly value={development.status} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Total units">
+                        <FluentInput readOnly value={String(development.totalUnits)} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Record created">
                         <FluentInput readOnly value={createdLabel} className="mda-input" />
+                      </DetailRow>
+                      <DetailRow label="Owner">
+                        <div className="mda-detail-row__owner">
+                          <Avatar name={development.ownerName} size={20} color="colorful" />
+                          <FluentInput readOnly value={development.ownerName} className="mda-input mda-detail-row__owner-input" />
+                        </div>
                       </DetailRow>
                     </div>
                   ) : (
-                    <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">No related records to show.</p>
+                    <div className="mda-related-placeholder">
+                      <p className="mda-related-placeholder__text">
+                        Related properties, buyers, and contracts appear here in a full model-driven app. This prototype uses
+                        the General tab for development information.
+                      </p>
                     </div>
                   )}
                 </section>
 
                 <aside className="mda-record-card mda-record-card--timeline" aria-label="Timeline">
-                  <div className="mda-timeline-aside__bar">
-                    <span className="mda-timeline-aside__title">Timeline</span>
-                    <div className="mda-timeline-aside__actions">
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
-                        <AddRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
-                        <FilterRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
-                        <ArrowSortRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
-                        <MoreHorizontalRegular />
-                      </button>
-                    </div>
+                <div className="mda-timeline-aside__bar">
+                  <span className="mda-timeline-aside__title">Timeline</span>
+                  <div className="mda-timeline-aside__actions">
+                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
+                      <AddRegular />
+                    </button>
+                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
+                      <FilterRegular />
+                    </button>
+                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
+                      <ArrowSortRegular />
+                    </button>
+                    <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
+                      <MoreHorizontalRegular />
+                    </button>
                   </div>
-                  <div className="mda-timeline-aside__body">
-                    <FluentInput
-                      placeholder="Search timeline"
-                      contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__search"
-                      disabled
-                      appearance="outline"
-                      aria-label="Search timeline"
-                    />
-                    <FluentInput
-                      placeholder="Enter a note…"
-                      contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__note"
-                      disabled
-                      appearance="outline"
-                      aria-label="Note"
-                    />
-                    <div className="mda-timeline-aside__empty">
-                      <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
-                        <DocumentRegular fontSize={32} />
-                      </span>
-                      <h3 className="mda-timeline-aside__empty-title">Get started</h3>
-                      <p className="mda-timeline-aside__empty-text">
-                        Add notes, portal messages, and activities to build this department&apos;s timeline.
-                      </p>
-                      <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
-                    </div>
+                </div>
+                <div className="mda-timeline-aside__body">
+                  <FluentInput
+                    placeholder="Search timeline"
+                    contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
+                    className="mda-timeline-aside__search"
+                    disabled
+                    appearance="outline"
+                    aria-label="Search timeline"
+                  />
+                  <FluentInput
+                    placeholder="Enter a note…"
+                    contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
+                    className="mda-timeline-aside__note"
+                    disabled
+                    appearance="outline"
+                    aria-label="Note"
+                  />
+                  <div className="mda-timeline-aside__empty">
+                    <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
+                      <DocumentRegular fontSize={32} />
+                    </span>
+                    <h3 className="mda-timeline-aside__empty-title">Get started</h3>
+                    <p className="mda-timeline-aside__empty-text">
+                      Add notes, site visits, and activities to build this development&apos;s timeline.
+                    </p>
+                    <p className="mda-timeline-aside__empty-meta">
+                      Record created on {createdShort}
+                    </p>
                   </div>
-                </aside>
+                </div>
+              </aside>
               </div>
             </div>
           </div>

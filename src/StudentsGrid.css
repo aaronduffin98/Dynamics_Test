@@ -1119,3 +1119,63 @@
   color: #a4262c;
   border-color: #f1bbbc;
 }
+
+.dynamics-status--planning {
+  background: #f3f2f1;
+  color: #605e5c;
+  border-color: #edebe9;
+}
+
+.dynamics-status--active {
+  background: #e8f4fd;
+  color: #004578;
+  border-color: #c7e0f4;
+}
+
+.dynamics-status--completed {
+  background: #dff6dd;
+  color: #107c10;
+  border-color: #c8e6c9;
+}
+
+.dynamics-status--available {
+  background: #dff6dd;
+  color: #107c10;
+  border-color: #c8e6c9;
+}
+
+.dynamics-status--reserved {
+  background: #fff4ce;
+  color: #8a6914;
+  border-color: #fde7a0;
+}
+
+.dynamics-status--sold {
+  background: #f3f2f1;
+  color: #605e5c;
+  border-color: #edebe9;
+}
+
+.dynamics-status--signed {
+  background: #e8f4fd;
+  color: #004578;
+  border-color: #c7e0f4;
+}
+
+.dynamics-status--draft {
+  background: #f3f2f1;
+  color: #605e5c;
+  border-color: #edebe9;
+}
+
+.dynamics-status--prospect {
+  background: #e8f4fd;
+  color: #004578;
+  border-color: #c7e0f4;
+}
+
+.dynamics-status--purchased {
+  background: #dff6dd;
+  color: #107c10;
+  border-color: #c8e6c9;
+}
