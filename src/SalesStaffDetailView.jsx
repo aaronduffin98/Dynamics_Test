@@ -41,6 +41,9 @@ import {
   TableRegular,
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
+import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
+import { SALES_STAFF_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
 
@@ -360,29 +363,12 @@ export default function SalesStaffDetailView({
               <div className="mda-detail-record-grid">
                 <section className="mda-record-card mda-record-card--form" aria-label="Sales Staff details">
                   {activeTab === "general" ? (
-                    <div className="mda-detail-columns">
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "0 0 4px" }}>
-                        Basic Information
-                      </p>
-                      <DetailRow label="Name" required>
-                        <FluentInput readOnly value={salesStaff.name} className="mda-input" />
-                      </DetailRow>
-                      <DetailRow label="Role" required>
-                        <FluentInput readOnly value={salesStaff.role} className="mda-input" />
-                      </DetailRow>
-                      <DetailRow label="Email" required>
-                        <FluentInput readOnly value={salesStaff.email} className="mda-input" />
-                      </DetailRow>
-                      <p className="dynamics-sitemap__group-label" style={{ gridColumn: "1 / -1", margin: "12px 0 4px" }}>
-                        Organisation Details
-                      </p>
-                      <DetailRow label="Assigned Development" required>
-                        <FluentInput readOnly value={salesStaff.assignedDevelopmentName} className="mda-input" />
-                      </DetailRow>
-                      <DetailRow label="Created On">
-                        <FluentInput readOnly value={createdLabel} className="mda-input" />
-                      </DetailRow>
-                    </div>
+                    <CustomizableFieldSection
+                      entityKey="salesStaff"
+                      record={salesStaff}
+                      fields={SALES_STAFF_DETAIL_FIELDS}
+                      context={{ createdLabel }}
+                    />
                   ) : (
                     <div className="mda-detail-related">
                       <p className="mda-related-placeholder__text">No related records to show.</p>
@@ -390,53 +376,7 @@ export default function SalesStaffDetailView({
                   )}
                 </section>
 
-                <aside className="mda-record-card mda-record-card--timeline" aria-label="Timeline">
-                  <div className="mda-timeline-aside__bar">
-                    <span className="mda-timeline-aside__title">Timeline</span>
-                    <div className="mda-timeline-aside__actions">
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
-                        <AddRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
-                        <FilterRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
-                        <ArrowSortRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
-                        <MoreHorizontalRegular />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mda-timeline-aside__body">
-                    <FluentInput
-                      placeholder="Search timeline"
-                      contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__search"
-                      disabled
-                      appearance="outline"
-                      aria-label="Search timeline"
-                    />
-                    <FluentInput
-                      placeholder="Enter a note…"
-                      contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__note"
-                      disabled
-                      appearance="outline"
-                      aria-label="Note"
-                    />
-                    <div className="mda-timeline-aside__empty">
-                      <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
-                        <DocumentRegular fontSize={32} />
-                      </span>
-                      <h3 className="mda-timeline-aside__empty-title">Get started</h3>
-                      <p className="mda-timeline-aside__empty-text">
-                        Add notes, portal messages, and activities to build this sales staff member&apos;s timeline.
-                      </p>
-                      <p className="mda-timeline-aside__empty-meta">Record created on {createdShort}</p>
-                    </div>
-                  </div>
-                </aside>
+                <RecordTimelineAside createdShort={createdShort} />
               </div>
             </div>
           </div>

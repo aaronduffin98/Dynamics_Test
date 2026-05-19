@@ -1,0 +1,516 @@
+/* Floating Customize FAB — dark charcoal + teal accent (reference hover style) */
+.layout-edit-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #1e2124;
+  color: #ffffff;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.layout-edit-fab:hover {
+  border-color: #10b981;
+  box-shadow:
+    0 4px 16px rgba(16, 185, 129, 0.2),
+    0 0 0 1px rgba(16, 185, 129, 0.15);
+}
+
+.layout-edit-fab:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.layout-edit-fab--active {
+  border-color: #10b981;
+}
+
+.layout-edit-fab__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.layout-edit-fab__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Edit-mode fields — same 2-col layout as default; visible edit chrome when active */
+.layout-edit-field {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Per-field highlight when Customize is on (outline avoids grid shift) */
+.layout-edit-mode .layout-edit-field {
+  border-radius: 4px;
+  outline: 1px dashed #c8c6c4;
+  outline-offset: 2px;
+  background: rgba(16, 185, 129, 0.05);
+  transition:
+    outline-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.layout-edit-mode .layout-edit-field:hover {
+  outline-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.layout-edit-mode .layout-edit-field--hidden {
+  outline-style: dotted;
+  opacity: 0.55;
+}
+
+.layout-edit-mode .layout-edit-field--dragging {
+  z-index: 2;
+  opacity: 0.95;
+  outline: 1px solid #10b981;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Subtle form-level cue */
+.layout-edit-mode .mda-record-card--form {
+  box-shadow: inset 3px 0 0 #10b981;
+}
+
+.layout-edit-field--type-open {
+  grid-column: 1 / -1;
+}
+
+.layout-edit-field__handle,
+.layout-edit-field__visibility,
+.layout-edit-field__delete,
+.layout-edit-field__settings {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #605e5c;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 1;
+}
+
+/* Edit mode: drag grip subtle at rest; hide/delete more visible */
+.layout-edit-mode .layout-edit-field__handle {
+  opacity: 0.4;
+  pointer-events: auto;
+}
+
+.layout-edit-mode .layout-edit-field__visibility,
+.layout-edit-mode .layout-edit-field__delete,
+.layout-edit-mode .layout-edit-field__settings {
+  opacity: 0.85;
+  color: #323130;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
+}
+
+.layout-edit-field:hover .layout-edit-field__handle,
+.layout-edit-field:focus-within .layout-edit-field__handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.layout-edit-field:hover .layout-edit-field__visibility,
+.layout-edit-field:hover .layout-edit-field__delete,
+.layout-edit-field:hover .layout-edit-field__settings,
+.layout-edit-field:focus-within .layout-edit-field__visibility,
+.layout-edit-field:focus-within .layout-edit-field__delete,
+.layout-edit-field:focus-within .layout-edit-field__settings {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.layout-edit-field__handle {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.layout-edit-field__handle:hover {
+  color: #10b981;
+}
+
+.layout-edit-field__handle:active {
+  cursor: grabbing;
+}
+
+.layout-edit-field__visibility {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.layout-edit-field__visibility:hover {
+  color: #10b981;
+}
+
+.layout-edit-field__delete {
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.layout-edit-field__delete:hover {
+  color: #d13438;
+}
+
+.layout-edit-field__settings {
+  right: 64px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.layout-edit-field__settings:hover,
+.layout-edit-field__settings--active {
+  color: #10b981;
+}
+
+.layout-edit-field-type-panel {
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px 10px 28px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px dashed #c8c6c4;
+  box-sizing: border-box;
+}
+
+.layout-edit-field-type-panel__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.layout-edit-field-type-panel__select,
+.layout-edit-field-type-panel__input {
+  min-width: 160px;
+  padding: 6px 10px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.layout-edit-field-type-panel__select:focus,
+.layout-edit-field-type-panel__input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.layout-edit-field-type-panel .dropdown-options-editor,
+.layout-edit-add-field__form .dropdown-options-editor {
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.dropdown-options-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dropdown-options-editor__heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.dropdown-options-editor__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.dropdown-options-editor__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  border-bottom: 1px solid #f3f2f1;
+}
+
+.dropdown-options-editor__row:last-child {
+  border-bottom: none;
+}
+
+.dropdown-options-editor__edit {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #323130;
+  background: transparent;
+}
+
+.dropdown-options-editor__edit:hover {
+  border-color: #edebe9;
+  background: #faf9f8;
+}
+
+.dropdown-options-editor__edit:focus {
+  outline: none;
+  border-color: #10b981;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.dropdown-options-editor__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #605e5c;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dropdown-options-editor__remove:hover:not(:disabled) {
+  color: #d13438;
+  background: rgba(209, 52, 56, 0.08);
+}
+
+.dropdown-options-editor__remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dropdown-options-editor__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-options-editor__input {
+  flex: 1;
+  min-width: 120px;
+  padding: 6px 10px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.dropdown-options-editor__input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.dropdown-options-editor__add-btn {
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #1e2124;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.dropdown-options-editor__add-btn:hover {
+  border-color: #10b981;
+}
+
+.layout-edit-add-field__value-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.layout-edit-add-field__select {
+  min-width: 140px;
+  padding: 6px 10px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.mda-field-control-select {
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #323130;
+}
+
+.mda-field-control--currency {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.mda-field-control--currency-prefix {
+  font-size: 14px;
+  font-weight: 600;
+  color: #605e5c;
+}
+
+.mda-field-control--currency .mda-input {
+  flex: 1;
+}
+
+.mda-field-control--url {
+  display: inline-block;
+  font-size: 14px;
+}
+
+.layout-edit-add-field {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed #edebe9;
+}
+
+.layout-edit-add-field__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #1e2124;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.layout-edit-add-field__btn:hover {
+  border-color: #10b981;
+}
+
+.layout-edit-add-field__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.layout-edit-add-field__form input {
+  min-width: 140px;
+  padding: 6px 10px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.layout-edit-add-field__form input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.layout-edit-add-field__cancel {
+  padding: 6px 12px;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  background: #faf9f8;
+  font-size: 13px;
+  color: #605e5c;
+  cursor: pointer;
+}
+
+.layout-edit-add-field__cancel:hover {
+  border-color: #c8c6c4;
+}
+
+.layout-edit-reset {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #0078d4;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.layout-edit-reset:hover {
+  color: #106ebe;
+}

@@ -422,6 +422,25 @@
   color: #323130;
 }
 
+.mda-detail-record .mda-detail-row__control .fui-Textarea {
+  background-color: #f5f5f5;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #323130;
+  width: 100%;
+}
+
+.mda-detail-record .mda-detail-row__control .fui-Textarea::after {
+  border-bottom: none;
+}
+
+.mda-detail-record .mda-detail-row__control .fui-Textarea textarea {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #323130;
+}
+
 /* Timeline card — sibling card to the form, not joined to it */
 .mda-record-card--timeline {
   display: flex;
@@ -514,6 +533,12 @@
 
 .mda-timeline-aside__note.fui-Input {
   font-size: 13px;
+}
+
+.mda-timeline-aside__note-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .mda-timeline-aside__empty {

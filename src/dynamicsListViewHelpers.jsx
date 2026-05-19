@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from "react";
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Input,
   Menu,
@@ -28,6 +28,86 @@ export const dynamicsListDateFmt = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
   timeStyle: "short",
 });
+
+const SELECTION_COLUMN_WIDTH = 44;
+
+/**
+ * Full-width column sizing with draggable resize handles.
+ * Fills the grid on load and window resize; widths the user sets are kept.
+ */
+export function useFillResizableColumnSizing(columnIds, options = {}) {
+  const minWidth = options.minWidth ?? 80;
+  const scrollRef = useRef(null);
+  const userSizedRef = useRef(new Set());
+
+  const [columnSizingOptions, setColumnSizingOptions] = useState(() =>
+    Object.fromEntries(
+      columnIds.map((id) => [id, { minWidth, defaultWidth: minWidth, idealWidth: minWidth }])
+    )
+  );
+
+  const distributeWidths = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || columnIds.length === 0) return;
+
+    const available = Math.max(
+      columnIds.length * minWidth,
+      el.clientWidth - SELECTION_COLUMN_WIDTH
+    );
+
+    setColumnSizingOptions((prev) => {
+      const fixedTotal = columnIds
+        .filter((id) => userSizedRef.current.has(id))
+        .reduce(
+          (sum, id) =>
+            sum + (prev[id]?.idealWidth ?? prev[id]?.defaultWidth ?? minWidth),
+          0
+        );
+
+      const flexIds = columnIds.filter((id) => !userSizedRef.current.has(id));
+      if (flexIds.length === 0) return prev;
+
+      const remaining = Math.max(flexIds.length * minWidth, available - fixedTotal);
+      const each = Math.floor(remaining / flexIds.length);
+
+      const next = { ...prev };
+      let changed = false;
+      for (const id of flexIds) {
+        const w = Math.max(minWidth, each);
+        if (prev[id]?.idealWidth !== w || prev[id]?.defaultWidth !== w) {
+          changed = true;
+          next[id] = { minWidth, defaultWidth: w, idealWidth: w };
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [columnIds, minWidth]);
+
+  useLayoutEffect(() => {
+    distributeWidths();
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => distributeWidths());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [distributeWidths]);
+
+  const onColumnResize = useCallback(
+    (_event, { columnId, width }) => {
+      userSizedRef.current.add(columnId);
+      const w = Math.max(minWidth, width);
+      setColumnSizingOptions((prev) => ({
+        ...prev,
+        [columnId]: { minWidth, defaultWidth: w, idealWidth: w },
+      }));
+    },
+    [minWidth]
+  );
+
+  const resizableColumnsOptions = useMemo(() => ({ autoFitColumns: false }), []);
+
+  return { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions };
+}
 
 /** Dynamics 365–style current view control: title + chevron, popover with search and saved views */
 export function DynamicsViewTitlePicker({ views, selectedViewId, onSelectViewId, onManageViews }) {

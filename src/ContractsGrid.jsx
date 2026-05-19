@@ -43,7 +43,20 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
+import {
+  DynamicsViewTitlePicker,
+  HeaderMenu,
+  dynamicsListDateFmt as dateFmt,
+  useFillResizableColumnSizing,
+} from "./dynamicsListViewHelpers.jsx";
+
+const CONTRACT_COLUMN_IDS = [
+  "contractId",
+  "buyerName",
+  "propertyLabel",
+  "status",
+  "contractDate",
+];
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
@@ -161,16 +174,8 @@ export default function ContractsGrid({
     ];
   }, [sortState, handleColumnSort, onMockCommand, onOpenContract]);
 
-  const columnSizingOptions = useMemo(
-    () => ({
-      contractId: { defaultWidth: 160, minWidth: 80 },
-      buyerName: { defaultWidth: 180, minWidth: 80 },
-      propertyLabel: { defaultWidth: 260, minWidth: 80 },
-      status: { defaultWidth: 140, minWidth: 80 },
-      contractDate: { defaultWidth: 180, minWidth: 80 },
-    }),
-    []
-  );
+  const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
+    useFillResizableColumnSizing(CONTRACT_COLUMN_IDS);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -402,7 +407,10 @@ export default function ContractsGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
-                  <div className="dynamics-grid-scroll dynamics-grid-scroll--list">
+                  <div
+                    ref={scrollRef}
+                    className="dynamics-grid-scroll dynamics-grid-scroll--list"
+                  >
                     <div className="dynamics-grid-scroll__inner">
                       <DataGrid
                         items={filteredItems}
@@ -412,7 +420,8 @@ export default function ContractsGrid({
                         onSortChange={(_, next) => setSortState(next)}
                         resizableColumns
                         columnSizingOptions={columnSizingOptions}
-                        resizableColumnsOptions={{ autoFitColumns: true }}
+                        onColumnResize={onColumnResize}
+                        resizableColumnsOptions={resizableColumnsOptions}
                         selectionMode="multiselect"
                         selectionAppearance="neutral"
                         subtleSelection

@@ -46,7 +46,22 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import { DynamicsViewTitlePicker, HeaderMenu, dynamicsListDateFmt as dateFmt } from "./dynamicsListViewHelpers.jsx";
+import {
+  DynamicsViewTitlePicker,
+  HeaderMenu,
+  dynamicsListDateFmt as dateFmt,
+  useFillResizableColumnSizing,
+} from "./dynamicsListViewHelpers.jsx";
+
+const DEVELOPMENT_COLUMN_IDS = [
+  "developmentId",
+  "name",
+  "location",
+  "status",
+  "totalUnits",
+  "ownerName",
+  "createdOn",
+];
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
@@ -58,15 +73,6 @@ const DEVELOPMENT_VIEWS = [
   { id: "completed", label: "Completed developments", isDefault: false },
   { id: "mine", label: "My developments", isDefault: false },
 ];
-
-function statusClass(status) {
-  const key = String(status).toLowerCase();
-  return `dynamics-status dynamics-status--${key}`;
-}
-
-function StatusCell({ status }) {
-  return <span className={statusClass(status)}>{status}</span>;
-}
 
 function OwnerCell({ name }) {
   return (
@@ -170,7 +176,11 @@ export default function DevelopmentsGrid({
         columnId: "status",
         compare: (a, b) => a.status.localeCompare(b.status),
         renderHeaderCell: () => headerOf("status", "Status"),
-        renderCell: (item) => <StatusCell status={item.status} />,
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.status}>
+            {item.status}
+          </TableCellLayout>
+        ),
       }),
       createTableColumn({
         columnId: "totalUnits",
@@ -193,19 +203,8 @@ export default function DevelopmentsGrid({
     ];
   }, [sortState, handleColumnSort, onMockCommand, onOpenDevelopment]);
 
-  /** Equal default widths — real equal distribution is enforced by CSS flex on the row */
-  const columnSizingOptions = useMemo(
-    () => ({
-      developmentId: { defaultWidth: 160, minWidth: 80 },
-      name: { defaultWidth: 160, minWidth: 80 },
-      location: { defaultWidth: 160, minWidth: 80 },
-      status: { defaultWidth: 160, minWidth: 80 },
-      totalUnits: { defaultWidth: 120, minWidth: 80 },
-      ownerName: { defaultWidth: 160, minWidth: 80 },
-      createdOn: { defaultWidth: 160, minWidth: 80 },
-    }),
-    []
-  );
+  const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
+    useFillResizableColumnSizing(DEVELOPMENT_COLUMN_IDS);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -452,7 +451,10 @@ export default function DevelopmentsGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
-                  <div className="dynamics-grid-scroll dynamics-grid-scroll--list">
+                  <div
+                    ref={scrollRef}
+                    className="dynamics-grid-scroll dynamics-grid-scroll--list"
+                  >
                     <div className="dynamics-grid-scroll__inner">
                       <DataGrid
                         items={filteredItems}
@@ -462,7 +464,8 @@ export default function DevelopmentsGrid({
                         onSortChange={(_, next) => setSortState(next)}
                         resizableColumns
                         columnSizingOptions={columnSizingOptions}
-                        resizableColumnsOptions={{ autoFitColumns: true }}
+                        onColumnResize={onColumnResize}
+                        resizableColumnsOptions={resizableColumnsOptions}
                         selectionMode="multiselect"
                         selectionAppearance="neutral"
                         subtleSelection

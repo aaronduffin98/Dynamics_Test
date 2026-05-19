@@ -1,5 +1,11 @@
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import EditModeFab from "./layoutCustomization/EditModeFab.jsx";
+import {
+  DETAIL_VIEW_TYPES,
+  LayoutCustomizationProvider,
+} from "./layoutCustomization/LayoutCustomizationContext.jsx";
+import "./layoutCustomization/LayoutEditMode.css";
 import BuyerDetailView from "./BuyerDetailView.jsx";
 import BuyersGrid from "./BuyersGrid.jsx";
 import ContractDetailView from "./ContractDetailView.jsx";
@@ -143,8 +149,11 @@ export default function App() {
     onToggleSitemap: toggleSitemap,
   };
 
+  const isRecordDetailView = DETAIL_VIEW_TYPES.has(view.type);
+
   return (
     <FluentProvider theme={webLightTheme}>
+      <LayoutCustomizationProvider isRecordDetailView={isRecordDetailView}>
       {view.type === "newDevelopment" ? (
         <NewDevelopmentForm
           existingDevelopments={developments}
@@ -195,7 +204,12 @@ export default function App() {
           {...nav}
         />
       ) : detailBuyer ? (
-        <BuyerDetailView buyer={detailBuyer} onBack={closeBuyer} {...nav} />
+        <BuyerDetailView
+          buyer={detailBuyer}
+          onBack={closeBuyer}
+          onOpenDevelopment={openDevelopment}
+          {...nav}
+        />
       ) : detailContract ? (
         <ContractDetailView contract={detailContract} onBack={closeContract} {...nav} />
       ) : detailSalesStaff ? (
@@ -226,6 +240,8 @@ export default function App() {
           {...nav}
         />
       )}
+        <EditModeFab />
+      </LayoutCustomizationProvider>
     </FluentProvider>
   );
 }

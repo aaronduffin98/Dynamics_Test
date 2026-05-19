@@ -22,7 +22,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  height: 56px;
+  min-height: 56px;
   padding: 0 12px 0 0;
   flex-shrink: 0;
   background: #723a8a;
@@ -42,8 +43,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   margin: 0;
   padding: 0;
   border: none;
@@ -106,9 +107,10 @@
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  font-size: 22px;
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  font-size: 40px;
+  font-weight: 300;
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #ffffff;
   line-height: 1;
@@ -189,6 +191,16 @@
   background: #f3f2f1;
 }
 
+.dynamics-sitemap__toggle:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: -2px;
+}
+
+.dynamics-sitemap__item:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: -2px;
+}
+
 .dynamics-sitemap__toggle-icon {
   width: 18px;
   height: 18px;
@@ -206,40 +218,60 @@
   padding: 8px 0;
 }
 
+.dynamics-sitemap__list li {
+  width: 100%;
+}
+
 .dynamics-sitemap__item {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 16px 10px 14px;
+  padding: 8px 16px 8px 12px;
   border: none;
   background: transparent;
   color: #323130;
   font-size: 13px;
   text-align: left;
   cursor: pointer;
+  border-radius: 0;
 }
 
+/* Dynamics model-driven app nav — light grey fill + blue left indicator on hover */
 .dynamics-sitemap__item:hover {
   background: #f3f2f1;
+  color: #323130;
+}
+
+.dynamics-sitemap__item:hover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #0078d4;
 }
 
 .dynamics-sitemap__item--active {
-  background: #edebe9;
+  background: #f3f2f1;
   font-weight: 600;
-  color: #602d70;
+  color: #323130;
 }
 
 .dynamics-sitemap__item--active::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 6px;
-  bottom: 6px;
+  top: 0;
+  bottom: 0;
   width: 3px;
-  background: #602d70;
-  border-radius: 0 2px 2px 0;
+  background: #0078d4;
+}
+
+.dynamics-sitemap__item--active:hover {
+  background: #edebe9;
 }
 
 .dynamics-sitemap__icon {
@@ -762,35 +794,26 @@
   min-width: 100%;
 }
 
-/* Force every row to be full-width and every data column to share width equally.
-   Fluent sets inline pixel widths on each cell when resizableColumns is on, so we
-   override those with !important and rely on flex-grow to distribute remaining space. */
+/* Flex rows — autoFitColumns fills width; Fluent inline px widths apply when user resizes. */
 .dynamics-grid-scroll--list .fui-DataGridHeader,
 .dynamics-grid-scroll--list .fui-DataGridBody {
-  width: 100% !important;
-  min-width: 0 !important;
+  width: 100%;
+  min-width: 100%;
 }
 
 .dynamics-grid-scroll--list [role="row"] {
   display: flex !important;
   flex-wrap: nowrap !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
+  width: 100%;
+  min-width: 100%;
 }
 
 .dynamics-grid-scroll--list [role="row"] > [role="columnheader"]:not(.fui-DataGridSelectionCell),
 .dynamics-grid-scroll--list [role="row"] > [role="gridcell"]:not(.fui-DataGridSelectionCell) {
-  flex: 1 1 0 !important;
-  flex-grow: 1 !important;
-  flex-shrink: 1 !important;
-  flex-basis: 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  inline-size: auto !important;
-  min-inline-size: 0 !important;
+  flex: 0 0 auto !important;
+  min-width: 80px !important;
   box-sizing: border-box !important;
+  overflow: hidden;
 }
 
 .dynamics-grid-scroll--list [role="row"] > .fui-DataGridSelectionCell {
@@ -904,17 +927,6 @@
    clipped by the surrounding card's overflow:hidden corners. */
 .dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell {
   position: relative;
-}
-
-.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell:hover::after,
-.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell:focus-within::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 2px solid #0078d4;
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 5;
 }
 
 /* Custom column header — label + sort indicator + dropdown menu chevron */
@@ -1036,16 +1048,21 @@
   cursor: pointer;
 }
 
-/* Column resize handles (Fluent TableResizeHandle) — invisible at rest, reveal on hover so drag still works */
+/* Column resize handles — drag the right edge of a header to resize */
 .dynamics-grid-scroll--list .fui-TableResizeHandle {
   cursor: col-resize;
   opacity: 0;
+  z-index: 6;
+  min-width: 10px;
+  flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .dynamics-grid-scroll--list .fui-DataGridHeaderCell:hover .fui-TableResizeHandle,
 .dynamics-grid-scroll--list .fui-TableResizeHandle:hover,
 .dynamics-grid-scroll--list .fui-TableResizeHandle:active {
-  opacity: 1;
+  opacity: 0.55;
+  background: transparent;
 }
 
 .dynamics-grid-scroll--list .fui-DataGridHeaderCell .fui-TableHeaderCell__aside {
@@ -1083,99 +1100,4 @@
 .dynamics-grid-footer__divider {
   color: #c8c6c4;
   user-select: none;
-}
-
-/* Status chips */
-.dynamics-status {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: 400;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
-.dynamics-status--draft {
-  background: #f3f2f1;
-  color: #605e5c;
-  border-color: #edebe9;
-}
-
-.dynamics-status--submitted {
-  background: #e8f4fd;
-  color: #004578;
-  border-color: #c7e0f4;
-}
-
-.dynamics-status--accepted {
-  background: #dff6dd;
-  color: #107c10;
-  border-color: #c8e6c9;
-}
-
-.dynamics-status--rejected {
-  background: #fde7e9;
-  color: #a4262c;
-  border-color: #f1bbbc;
-}
-
-.dynamics-status--planning {
-  background: #f3f2f1;
-  color: #605e5c;
-  border-color: #edebe9;
-}
-
-.dynamics-status--active {
-  background: #e8f4fd;
-  color: #004578;
-  border-color: #c7e0f4;
-}
-
-.dynamics-status--completed {
-  background: #dff6dd;
-  color: #107c10;
-  border-color: #c8e6c9;
-}
-
-.dynamics-status--available {
-  background: #dff6dd;
-  color: #107c10;
-  border-color: #c8e6c9;
-}
-
-.dynamics-status--reserved {
-  background: #fff4ce;
-  color: #8a6914;
-  border-color: #fde7a0;
-}
-
-.dynamics-status--sold {
-  background: #f3f2f1;
-  color: #605e5c;
-  border-color: #edebe9;
-}
-
-.dynamics-status--signed {
-  background: #e8f4fd;
-  color: #004578;
-  border-color: #c7e0f4;
-}
-
-.dynamics-status--draft {
-  background: #f3f2f1;
-  color: #605e5c;
-  border-color: #edebe9;
-}
-
-.dynamics-status--prospect {
-  background: #e8f4fd;
-  color: #004578;
-  border-color: #c7e0f4;
-}
-
-.dynamics-status--purchased {
-  background: #dff6dd;
-  color: #107c10;
-  border-color: #c8e6c9;
 }

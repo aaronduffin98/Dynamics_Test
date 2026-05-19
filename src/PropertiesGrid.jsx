@@ -49,7 +49,20 @@ import {
   ShareRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import { DynamicsViewTitlePicker, HeaderMenu } from "./dynamicsListViewHelpers.jsx";
+import {
+  DynamicsViewTitlePicker,
+  HeaderMenu,
+  useFillResizableColumnSizing,
+} from "./dynamicsListViewHelpers.jsx";
+
+const PROPERTY_COLUMN_IDS = [
+  "propertyId",
+  "developmentName",
+  "type",
+  "bedrooms",
+  "price",
+  "status",
+];
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import "./StudentsGrid.css";
 
@@ -67,15 +80,6 @@ const priceFmt = new Intl.NumberFormat("en-GB", {
   currency: "GBP",
   maximumFractionDigits: 0,
 });
-
-function statusClass(status) {
-  const key = String(status).toLowerCase();
-  return `dynamics-status dynamics-status--${key}`;
-}
-
-function StatusCell({ status }) {
-  return <span className={statusClass(status)}>{status}</span>;
-}
 
 export default function PropertiesGrid({
   properties,
@@ -198,22 +202,17 @@ export default function PropertiesGrid({
         columnId: "status",
         compare: (a, b) => a.status.localeCompare(b.status),
         renderHeaderCell: () => headerOf("status", "Status"),
-        renderCell: (item) => <StatusCell status={item.status} />,
+        renderCell: (item) => (
+          <TableCellLayout truncate title={item.status}>
+            {item.status}
+          </TableCellLayout>
+        ),
       }),
     ];
   }, [sortState, handleColumnSort, onMockCommand, onOpenProperty]);
 
-  const columnSizingOptions = useMemo(
-    () => ({
-      propertyId: { defaultWidth: 160, minWidth: 80 },
-      developmentName: { defaultWidth: 160, minWidth: 80 },
-      type: { defaultWidth: 160, minWidth: 80 },
-      bedrooms: { defaultWidth: 160, minWidth: 80 },
-      price: { defaultWidth: 160, minWidth: 80 },
-      status: { defaultWidth: 160, minWidth: 80 },
-    }),
-    []
-  );
+  const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
+    useFillResizableColumnSizing(PROPERTY_COLUMN_IDS);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -450,7 +449,7 @@ export default function PropertiesGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
-                  <div className="dynamics-grid-scroll dynamics-grid-scroll--list">
+                  <div ref={scrollRef} className="dynamics-grid-scroll dynamics-grid-scroll--list">
                     <div className="dynamics-grid-scroll__inner">
                       <DataGrid
                         items={filteredItems}
@@ -460,7 +459,8 @@ export default function PropertiesGrid({
                         onSortChange={(_, next) => setSortState(next)}
                         resizableColumns
                         columnSizingOptions={columnSizingOptions}
-                        resizableColumnsOptions={{ autoFitColumns: true }}
+                        onColumnResize={onColumnResize}
+                        resizableColumnsOptions={resizableColumnsOptions}
                         selectionMode="multiselect"
                         selectionAppearance="neutral"
                         subtleSelection
