@@ -35,24 +35,8 @@ import {
   suggestedControlType,
   suggestedDropdownOptions,
 } from "./fieldControlTypes.js";
+import DetailRow from "../detailRecord/DetailRow.jsx";
 import { useLayoutCustomization } from "./LayoutCustomizationContext.jsx";
-
-function DetailRow({ label, required, alignTop, children, className = "" }) {
-  return (
-    <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""} ${className}`.trim()}>
-      <label className="mda-detail-row__label">
-        {label}
-        {required ? (
-          <span className="mda-detail-row__req" aria-hidden="true">
-            {" "}
-            *
-          </span>
-        ) : null}
-      </label>
-      <div className="mda-detail-row__control">{children}</div>
-    </div>
-  );
-}
 
 function renderControl(field, record, context, layout) {
   if (isControlTypeLocked(field)) {
@@ -285,11 +269,7 @@ function buildRows({
       rows.push(
         <p
           key={`section-${field.section}`}
-          className="dynamics-sitemap__group-label"
-          style={{
-            gridColumn: "1 / -1",
-            margin: lastSection ? "12px 0 4px" : "0 0 4px",
-          }}
+          className={`mda-form-section__title${lastSection ? "" : " mda-form-section__title--first"}`}
         >
           {field.sectionLabel}
         </p>,

@@ -18,23 +18,9 @@ import {
   suggestedControlType,
   suggestedDropdownOptions,
 } from "./fieldControlTypes.js";
+import DetailRow from "../detailRecord/DetailRow.jsx";
 
-export function DetailRow({ label, required, alignTop, children, className = "" }) {
-  return (
-    <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""} ${className}`.trim()}>
-      <label className="mda-detail-row__label">
-        {label}
-        {required ? (
-          <span className="mda-detail-row__req" aria-hidden="true">
-            {" "}
-            *
-          </span>
-        ) : null}
-      </label>
-      <div className="mda-detail-row__control">{children}</div>
-    </div>
-  );
-}
+export { DetailRow };
 
 function FieldTypePanel({ field, layout, onApply, onSetCustomValue }) {
   const current = getEffectiveFieldControl(field, layout);

@@ -37,7 +37,7 @@ import {
   ShieldCheckmarkRegular,
   TableRegular,
 } from "@fluentui/react-icons";
-import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
+import DynamicsAppShell from "./shell/DynamicsAppShell.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
 import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
@@ -55,23 +55,6 @@ const dateShort = new Intl.DateTimeFormat(undefined, {
 });
 
 /** Horizontal label-left field row used inside the Dynamics detail form */
-function DetailRow({ label, required, alignTop, children }) {
-  return (
-    <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""}`}>
-      <label className="mda-detail-row__label">
-        {label}
-        {required ? (
-          <span className="mda-detail-row__req" aria-hidden="true">
-            {" "}
-            *
-          </span>
-        ) : null}
-      </label>
-      <div className="mda-detail-row__control">{children}</div>
-    </div>
-  );
-}
-
 /** Power Apps record header — value/link on top, caption (Base, Manager, …) below */
 function HeaderSummaryField({ primary, secondary, variant = "default", showAvatar, avatarName }) {
   const text = primary ?? "—";
@@ -100,6 +83,7 @@ function HeaderSummaryField({ primary, secondary, variant = "default", showAvata
 export default function DevelopmentDetailView({
   development,
   onBack,
+  onNavigateHome,
   onNavigateDevelopments,
   onNavigateProperties,
   onNavigateBuyers,
@@ -113,119 +97,19 @@ export default function DevelopmentDetailView({
   const createdShort = useMemo(() => dateShort.format(development.createdOn), [development.createdOn]);
 
   return (
-    <div className={`dynamics-app mda-new-record mda-detail-record ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
-      <header className="dynamics-app-header" role="banner">
-        <div className="dynamics-app-header__brand">
-          <button type="button" className="dynamics-app-header__logo" aria-label="App launcher">
-            <PowerAppsAppLauncherIcon />
-          </button>
-          <span className="dynamics-app-header__product">Power Apps</span>
-          <span className="dynamics-app-header__pipe" aria-hidden="true">
-            |
-          </span>
-          <span className="dynamics-app-header__app">Property Management</span>
-          <span className="dynamics-app-header__divider" aria-hidden="true" />
-          <span className="dynamics-app-header__env">SANDBOX</span>
-        </div>
-        <div className="dynamics-app-header__actions">
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Search">
-            <SearchRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Quick create">
-            <AddSquareRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Filter">
-            <FilterRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Settings">
-            <SettingsRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Help">
-            <QuestionCircleRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__user" aria-label="Account">
-            AD
-          </button>
-        </div>
-      </header>
-
-      <div className="dynamics-app-body">
-        <nav
-          className={`dynamics-sitemap mda-sitemap ${sitemapCollapsed ? "dynamics-sitemap--collapsed" : ""}`}
-          aria-label="Site map"
-        >
-          <button
-            type="button"
-            className="dynamics-sitemap__toggle"
-            onClick={onToggleSitemap}
-            aria-label={sitemapCollapsed ? "Expand site map" : "Collapse site map"}
-            aria-expanded={!sitemapCollapsed}
-          >
-            <LineHorizontal3Regular className="dynamics-sitemap__toggle-icon" />
-          </button>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--pinned">
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <HomeRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Home</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <ClockRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Recent</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <PinRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Pinned</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateDevelopments?.()}>
-                <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Developments</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateProperties?.()}>
-                <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Properties</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
-                <PersonCircleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Buyers</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
-                <DocumentTextRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Contracts</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
-                <PersonAccountsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Sales Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <SettingsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Settings</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
+    <DynamicsAppShell
+      activeNav="developments"
+      appClassName="mda-new-record mda-detail-record"
+      headerVariant="detail"
+      onNavigateHome={onNavigateHome}
+      onNavigateDevelopments={onNavigateDevelopments}
+      onNavigateProperties={onNavigateProperties}
+      onNavigateBuyers={onNavigateBuyers}
+      onNavigateContracts={onNavigateContracts}
+      onNavigateSalesStaff={onNavigateSalesStaff}
+      sitemapCollapsed={sitemapCollapsed}
+      onToggleSitemap={onToggleSitemap}
+    >
         <main className="dynamics-main mda-record-main">
           <div className="mda-record-commandbar" role="toolbar" aria-label="Record commands">
             <FluentButton
@@ -399,7 +283,6 @@ export default function DevelopmentDetailView({
             </div>
           </div>
         </main>
-      </div>
-    </div>
+    </DynamicsAppShell>
   );
 }

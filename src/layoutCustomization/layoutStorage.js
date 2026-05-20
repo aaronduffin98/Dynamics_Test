@@ -41,6 +41,15 @@ export function saveAllLayouts(layouts) {
   }
 }
 
+/** Remove all saved layout customization for every entity. */
+export function clearAllLayouts() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore quota errors in demo */
+  }
+}
+
 export function getDefaultPageLayout() {
   return {
     cardOrder: [...BUILTIN_CARD_IDS],
@@ -137,7 +146,7 @@ export function getDefaultGridLayout(defaultColumnIds) {
   };
 }
 
-export function mergeGridLayout(stored, defaultColumnIds) {
+export function mergeGridLayout(stored, defaultColumnIds, detailCustomFieldIds = []) {
   const defaults = getDefaultGridLayout(defaultColumnIds);
   if (!stored) return defaults;
 
@@ -151,7 +160,7 @@ export function mergeGridLayout(stored, defaultColumnIds) {
 
   const customIds = customColumns.map((c) => c.id);
   const builtinSet = new Set(defaultColumnIds);
-  const knownIds = new Set([...defaultColumnIds, ...customIds]);
+  const knownIds = new Set([...defaultColumnIds, ...customIds, ...detailCustomFieldIds]);
   const removedSet = new Set(
     (stored.removedColumns ?? []).filter((id) => builtinSet.has(id)),
   );

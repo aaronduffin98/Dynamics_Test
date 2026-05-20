@@ -31,7 +31,12 @@ export default function GridColumnEditToolbar({ addableColumns = [], onAddColumn
         <button
           type="button"
           className="layout-grid-edit-toolbar__btn"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            if (addableColumns.length > 0) {
+              setSelectedId(addableColumns[0].id);
+            }
+          }}
         >
           <AddRegular fontSize={16} />
           Add column

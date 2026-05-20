@@ -1,6 +1,8 @@
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import EditModeBanner from "./layoutCustomization/EditModeBanner.jsx";
 import EditModeFab from "./layoutCustomization/EditModeFab.jsx";
+import LayoutMasterReset from "./layoutCustomization/LayoutMasterReset.jsx";
 import {
   DETAIL_VIEW_TYPES,
   LIST_VIEW_TYPES,
@@ -13,6 +15,7 @@ import ContractDetailView from "./ContractDetailView.jsx";
 import ContractsGrid from "./ContractsGrid.jsx";
 import DevelopmentDetailView from "./DevelopmentDetailView.jsx";
 import DevelopmentsGrid from "./DevelopmentsGrid.jsx";
+import HomeDashboard from "./HomeDashboard.jsx";
 import NewBuyerForm from "./NewBuyerForm.jsx";
 import NewContractForm from "./NewContractForm.jsx";
 import NewDevelopmentForm from "./NewDevelopmentForm.jsx";
@@ -35,7 +38,7 @@ export default function App() {
   const [contracts, setContracts] = useState(() => [...mockContracts]);
   const [salesStaff, setSalesStaff] = useState(() => [...mockSalesStaff]);
 
-  const [view, setView] = useState({ type: "developments" });
+  const [view, setView] = useState({ type: "home" });
   const [sitemapCollapsed, setSitemapCollapsed] = useState(false);
   const toggleSitemap = useCallback(() => {
     setSitemapCollapsed((prev) => !prev);
@@ -72,6 +75,7 @@ export default function App() {
     return salesStaff.find((s) => s.salesStaffId === view.salesStaffId) ?? null;
   }, [view, salesStaff]);
 
+  const goHome = useCallback(() => setView({ type: "home" }), []);
   const goDevelopmentsList = useCallback(() => setView({ type: "developments" }), []);
   const goPropertiesList = useCallback(() => setView({ type: "properties" }), []);
   const goBuyersList = useCallback(() => setView({ type: "buyers" }), []);
@@ -141,6 +145,7 @@ export default function App() {
   }, []);
 
   const nav = {
+    onNavigateHome: goHome,
     onNavigateDevelopments: goDevelopmentsList,
     onNavigateProperties: goPropertiesList,
     onNavigateBuyers: goBuyersList,
@@ -216,6 +221,25 @@ export default function App() {
         <ContractDetailView contract={detailContract} onBack={closeContract} {...nav} />
       ) : detailSalesStaff ? (
         <SalesStaffDetailView salesStaff={detailSalesStaff} onBack={closeSalesStaff} {...nav} />
+      ) : view.type === "home" ? (
+        <HomeDashboard
+          developments={developments}
+          properties={properties}
+          buyers={buyers}
+          contracts={contracts}
+          onOpenDevelopment={openDevelopment}
+          onOpenProperty={openProperty}
+          onOpenBuyer={openBuyer}
+          onOpenContract={openContract}
+          {...nav}
+        />
+      ) : view.type === "developments" ? (
+        <DevelopmentsGrid
+          developments={developments}
+          onOpenDevelopment={openDevelopment}
+          onOpenNewDevelopment={openNewDevelopment}
+          {...nav}
+        />
       ) : view.type === "properties" ? (
         <PropertiesGrid
           properties={properties}
@@ -235,13 +259,20 @@ export default function App() {
           {...nav}
         />
       ) : (
-        <DevelopmentsGrid
+        <HomeDashboard
           developments={developments}
+          properties={properties}
+          buyers={buyers}
+          contracts={contracts}
           onOpenDevelopment={openDevelopment}
-          onOpenNewDevelopment={openNewDevelopment}
+          onOpenProperty={openProperty}
+          onOpenBuyer={openBuyer}
+          onOpenContract={openContract}
           {...nav}
         />
       )}
+        <LayoutMasterReset />
+        <EditModeBanner />
         <EditModeFab />
       </LayoutCustomizationProvider>
     </FluentProvider>

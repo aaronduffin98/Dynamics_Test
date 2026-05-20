@@ -1,32 +1,29 @@
 import { useMemo, useState } from "react";
 import {
-  AddRegular,
   ArrowLeftRegular,
-  ArrowSortRegular,
   BuildingRegular,
   ChevronDownRegular,
   ClockRegular,
-  DocumentRegular,
   DocumentTextRegular,
-  FilterRegular,
   HomeRegular,
   LineHorizontal3Regular,
-  MoreHorizontalRegular,
-  PenRegular,
   PeopleRegular,
   PersonAccountsRegular,
   PersonCircleRegular,
   PinRegular,
   QuestionCircleRegular,
   SaveRegular,
-  SearchRegular,
   SettingsRegular,
 } from "@fluentui/react-icons";
-import { Avatar, Button as FluentButton, Input as FluentInput } from "@fluentui/react-components";
-import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
+import { Avatar, Button as FluentButton } from "@fluentui/react-components";
+import DynamicsAppShell from "./shell/DynamicsAppShell.jsx";
 import "./StudentsGrid.css";
 import "./StudentDetailView.css";
 import "./IntakeForm.css";
+import DetailRow from "./detailRecord/DetailRow.jsx";
+import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+
+export { DetailRow };
 
 export const dateLong = new Intl.DateTimeFormat(undefined, {
   dateStyle: "long",
@@ -36,30 +33,6 @@ export const dateLong = new Intl.DateTimeFormat(undefined, {
 export const dateShort = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
 });
-
-export function DetailRow({ label, required, alignTop, error, children }) {
-  return (
-    <div className={`mda-detail-row ${alignTop ? "mda-detail-row--top" : ""}`}>
-      <label className="mda-detail-row__label">
-        {label}
-        {required ? (
-          <span className="mda-detail-row__req" aria-hidden="true">
-            {" "}
-            *
-          </span>
-        ) : null}
-      </label>
-      <div className="mda-detail-row__control">
-        {children}
-        {error ? (
-          <span className="mda-field__error" role="alert">
-            {error}
-          </span>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
 export function HeaderSummaryField({ primary, secondary, variant = "default", showAvatar, avatarName }) {
   const text = primary ?? "—";
@@ -102,6 +75,7 @@ export function IntakeFormLayout({
   timelineHint,
   draftStartedOn,
   children,
+  onNavigateHome,
   onNavigateDevelopments,
   onNavigateProperties,
   onNavigateBuyers,
@@ -115,104 +89,28 @@ export function IntakeFormLayout({
   const createdLabel = useMemo(() => dateLong.format(draftStartedOn), [draftStartedOn]);
   const createdShort = useMemo(() => dateShort.format(draftStartedOn), [draftStartedOn]);
 
-  const sitemapItem = (entity, Icon, label, onNavigate) => (
-    <li>
-      <button
-        type="button"
-        className={`dynamics-sitemap__item${entity === activeEntity ? " dynamics-sitemap__item--active" : ""}`}
-        onClick={() => onNavigate?.()}
-      >
-        <Icon className="dynamics-sitemap__icon" />
-        <span className="dynamics-sitemap__label">{label}</span>
-      </button>
-    </li>
-  );
+  const activeNavKey = {
+    developments: "developments",
+    properties: "properties",
+    buyers: "buyers",
+    contracts: "contracts",
+    salesStaff: "salesStaff",
+  }[activeEntity] ?? "developments";
 
   return (
-    <div
-      className={`dynamics-app mda-new-record mda-detail-record mda-application-form ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}
+    <DynamicsAppShell
+      activeNav={activeNavKey}
+      appClassName="mda-new-record mda-detail-record mda-application-form"
+      headerVariant="form"
+      onNavigateHome={onNavigateHome}
+      onNavigateDevelopments={onNavigateDevelopments}
+      onNavigateProperties={onNavigateProperties}
+      onNavigateBuyers={onNavigateBuyers}
+      onNavigateContracts={onNavigateContracts}
+      onNavigateSalesStaff={onNavigateSalesStaff}
+      sitemapCollapsed={sitemapCollapsed}
+      onToggleSitemap={onToggleSitemap}
     >
-      <header className="dynamics-app-header" role="banner">
-        <div className="dynamics-app-header__brand">
-          <button type="button" className="dynamics-app-header__logo" aria-label="App launcher">
-            <PowerAppsAppLauncherIcon />
-          </button>
-          <span className="dynamics-app-header__product">Power Apps</span>
-          <span className="dynamics-app-header__pipe" aria-hidden="true">
-            |
-          </span>
-          <span className="dynamics-app-header__app">Property Management</span>
-          <span className="dynamics-app-header__divider" aria-hidden="true" />
-          <span className="dynamics-app-header__env">SANDBOX</span>
-        </div>
-        <div className="dynamics-app-header__actions">
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Search">
-            <SearchRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Help">
-            <QuestionCircleRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Settings">
-            <SettingsRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__user" aria-label="Account">
-            AD
-          </button>
-        </div>
-      </header>
-
-      <div className="dynamics-app-body">
-        <nav
-          className={`dynamics-sitemap mda-sitemap ${sitemapCollapsed ? "dynamics-sitemap--collapsed" : ""}`}
-          aria-label="Site map"
-        >
-          <button
-            type="button"
-            className="dynamics-sitemap__toggle"
-            onClick={onToggleSitemap}
-            aria-label={sitemapCollapsed ? "Expand site map" : "Collapse site map"}
-            aria-expanded={!sitemapCollapsed}
-          >
-            <LineHorizontal3Regular className="dynamics-sitemap__toggle-icon" />
-          </button>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--pinned">
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <HomeRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Home</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <ClockRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Recent</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <PinRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Pinned</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-          </ul>
-          <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            {sitemapItem("developments", PeopleRegular, "Developments", onNavigateDevelopments)}
-            {sitemapItem("properties", BuildingRegular, "Properties", onNavigateProperties)}
-            {sitemapItem("buyers", PersonCircleRegular, "Buyers", onNavigateBuyers)}
-            {sitemapItem("contracts", DocumentTextRegular, "Contracts", onNavigateContracts)}
-            {sitemapItem("salesStaff", PersonAccountsRegular, "Sales Staff", onNavigateSalesStaff)}
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <SettingsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Settings</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
         <main className="dynamics-main mda-record-main">
           <div className="mda-record-commandbar" role="toolbar" aria-label="Record commands">
             <FluentButton
@@ -298,56 +196,14 @@ export function IntakeFormLayout({
                   )}
                 </section>
 
-                <aside className="mda-record-card mda-record-card--timeline" aria-label="Timeline">
-                  <div className="mda-timeline-aside__bar">
-                    <span className="mda-timeline-aside__title">Timeline</span>
-                    <div className="mda-timeline-aside__actions">
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Add to timeline">
-                        <AddRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Filter timeline">
-                        <FilterRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="Sort">
-                        <ArrowSortRegular />
-                      </button>
-                      <button type="button" className="mda-timeline-aside__icon-btn" aria-label="More">
-                        <MoreHorizontalRegular />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mda-timeline-aside__body">
-                    <FluentInput
-                      placeholder="Search timeline"
-                      contentBefore={<SearchRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__search"
-                      disabled
-                      appearance="outline"
-                      aria-label="Search timeline"
-                    />
-                    <FluentInput
-                      placeholder="Enter a note…"
-                      contentAfter={<PenRegular className="mda-timeline-aside__field-icon" aria-hidden />}
-                      className="mda-timeline-aside__note"
-                      disabled
-                      appearance="outline"
-                      aria-label="Note"
-                    />
-                    <div className="mda-timeline-aside__empty">
-                      <span className="mda-timeline-aside__empty-icon" aria-hidden="true">
-                        <DocumentRegular fontSize={32} />
-                      </span>
-                      <h3 className="mda-timeline-aside__empty-title">Get started</h3>
-                      <p className="mda-timeline-aside__empty-text">{timelineHint}</p>
-                      <p className="mda-timeline-aside__empty-meta">Record draft started on {createdShort}</p>
-                    </div>
-                  </div>
-                </aside>
+                <RecordTimelineAside
+                  emptyText={timelineHint}
+                  recordMetaLabel={`Record draft started on ${createdShort}`}
+                />
               </div>
             </form>
           </div>
         </main>
-      </div>
-    </div>
+    </DynamicsAppShell>
   );
 }

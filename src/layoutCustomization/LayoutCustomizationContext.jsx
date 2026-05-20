@@ -3,6 +3,7 @@ import {
   BUILTIN_CARD_IDS,
   getCardWidth,
   getDefaultPageLayout,
+  clearAllLayouts,
   loadAllLayouts,
   mergeLayout,
   getDefaultGridLayout,
@@ -44,6 +45,11 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
     return () => document.documentElement.classList.remove("layout-grid-edit-mode");
   }, [editMode, isListView]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("layout-edit-mode-active", editMode);
+    return () => document.documentElement.classList.remove("layout-edit-mode-active");
+  }, [editMode]);
+
   const persistLayouts = useCallback((next) => {
     setLayouts(next);
     saveAllLayouts(next);
@@ -63,6 +69,12 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
 
   const toggleEditMode = useCallback(() => {
     setEditMode((prev) => !prev);
+  }, []);
+
+  const resetAllLayouts = useCallback(() => {
+    clearAllLayouts();
+    setLayouts({});
+    setEditMode(false);
   }, []);
 
   const reorderFields = useCallback(
@@ -488,7 +500,14 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
   );
 
   const getGridLayout = useCallback(
-    (entityKey, defaultColumnIds) => mergeGridLayout(layouts[entityKey]?.gridLayout, defaultColumnIds),
+    (entityKey, defaultColumnIds) => {
+      const detailCustomFieldIds = (layouts[entityKey]?.customFields ?? []).map((f) => f.id);
+      return mergeGridLayout(
+        layouts[entityKey]?.gridLayout,
+        defaultColumnIds,
+        detailCustomFieldIds,
+      );
+    },
     [layouts],
   );
 
@@ -530,13 +549,47 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
     [getGridLayout, setGridLayout],
   );
 
+  const addGridColumn = useCallback(
+    (entityKey, defaultColumnIds, detailFieldIds, columnId) => {
+      const gridLayout = getGridLayout(entityKey, defaultColumnIds);
+      if (gridLayout.columnOrder.includes(columnId)) return;
+
+      if (defaultColumnIds.includes(columnId)) {
+        const removedColumns = gridLayout.removedColumns.filter((id) => id !== columnId);
+        setGridLayout(entityKey, {
+          ...gridLayout,
+          columnOrder: [...gridLayout.columnOrder, columnId],
+          removedColumns,
+        });
+        return;
+      }
+
+      const entityLayout = getLayout(entityKey, detailFieldIds);
+      if (entityLayout.customFields.some((f) => f.id === columnId)) {
+        setGridLayout(entityKey, {
+          ...gridLayout,
+          columnOrder: [...gridLayout.columnOrder, columnId],
+        });
+        return;
+      }
+
+      if (gridLayout.customColumns.some((c) => c.id === columnId)) {
+        setGridLayout(entityKey, {
+          ...gridLayout,
+          columnOrder: [...gridLayout.columnOrder, columnId],
+        });
+      }
+    },
+    [getGridLayout, setGridLayout, getLayout],
+  );
+
   const removeGridColumn = useCallback(
     (entityKey, defaultColumnIds, columnId) => {
       const gridLayout = getGridLayout(entityKey, defaultColumnIds);
-      const isCustom = gridLayout.customColumns.some((c) => c.id === columnId);
+      const isLegacyGridCustom = gridLayout.customColumns.some((c) => c.id === columnId);
       const columnOrder = gridLayout.columnOrder.filter((id) => id !== columnId);
 
-      if (isCustom) {
+      if (isLegacyGridCustom) {
         setGridLayout(entityKey, {
           ...gridLayout,
           columnOrder,
@@ -545,12 +598,18 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
         return;
       }
 
+      const detailCustomIds = new Set((layouts[entityKey]?.customFields ?? []).map((f) => f.id));
+      if (detailCustomIds.has(columnId)) {
+        setGridLayout(entityKey, { ...gridLayout, columnOrder });
+        return;
+      }
+
       if (!defaultColumnIds.includes(columnId)) return;
 
       const removedColumns = [...new Set([...gridLayout.removedColumns, columnId])];
       setGridLayout(entityKey, { ...gridLayout, columnOrder, removedColumns });
     },
-    [getGridLayout, setGridLayout],
+    [getGridLayout, setGridLayout, layouts],
   );
 
   const resetGridLayout = useCallback(
@@ -610,6 +669,7 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
       isRecordDetailView,
       isListView,
       toggleEditMode,
+      resetAllLayouts,
       getLayout,
       reorderFields,
       setFieldVisible,
@@ -639,6 +699,7 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
       reorderGridColumns,
       addCustomGridColumn,
       restoreGridColumn,
+      addGridColumn,
       removeGridColumn,
       resetGridLayout,
       layouts,
@@ -651,6 +712,7 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
       isRecordDetailView,
       isListView,
       toggleEditMode,
+      resetAllLayouts,
       getLayout,
       reorderFields,
       setFieldVisible,
@@ -680,6 +742,7 @@ export function LayoutCustomizationProvider({ children, isRecordDetailView, isLi
       reorderGridColumns,
       addCustomGridColumn,
       restoreGridColumn,
+      addGridColumn,
       removeGridColumn,
       resetGridLayout,
       layouts,

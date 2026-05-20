@@ -907,6 +907,11 @@
   z-index: 3;
   background: #ffffff !important;
   box-shadow: none;
+  overflow: visible;
+}
+
+.dynamics-grid-scroll--list .fui-DataGridHeader [role="row"] > [role="columnheader"]:not(.fui-DataGridSelectionCell) {
+  overflow: visible !important;
 }
 
 .dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell,
@@ -929,8 +934,31 @@
    Pseudo-element overlay so the full rectangle is drawn on top of Fluent's inner
    header-cell wrapper (which would otherwise hide the top/bottom edges) and is not
    clipped by the surrounding card's overflow:hidden corners. */
-.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell {
+.dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell:not(.fui-DataGridSelectionCell) {
   position: relative;
+  overflow: visible;
+}
+
+.dynamics-grid-scroll--list
+  .fui-DataGridHeader
+  .fui-DataGridHeaderCell:not(.fui-DataGridSelectionCell)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.dynamics-grid-scroll--list
+  .fui-DataGridHeader
+  .fui-DataGridHeaderCell:not(.fui-DataGridSelectionCell):hover::before,
+.dynamics-grid-scroll--list
+  .fui-DataGridHeader
+  .fui-DataGridHeaderCell:not(.fui-DataGridSelectionCell):focus-within::before {
+  border-color: #0078d4;
 }
 
 /* Custom column header — label + sort indicator + dropdown menu chevron */

@@ -55,7 +55,10 @@ import {
 import GridColumnEditToolbar from "./layoutCustomization/GridColumnEditToolbar.jsx";
 import GridHeaderDnD from "./layoutCustomization/GridHeaderDnD.jsx";
 import { useLayoutCustomization } from "./layoutCustomization/LayoutCustomizationContext.jsx";
+import { PROPERTY_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import useCustomizableGridColumns from "./layoutCustomization/useCustomizableGridColumns.jsx";
+
+const PROPERTY_DETAIL_FIELD_IDS = PROPERTY_DETAIL_FIELDS.map((f) => f.id);
 
 const PROPERTY_COLUMN_IDS = [
   "propertyId",
@@ -65,7 +68,7 @@ const PROPERTY_COLUMN_IDS = [
   "price",
   "status",
 ];
-import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
+import DynamicsAppShell from "./shell/DynamicsAppShell.jsx";
 import "./StudentsGrid.css";
 
 const PROPERTY_VIEWS = [
@@ -87,6 +90,7 @@ export default function PropertiesGrid({
   properties,
   onOpenProperty,
   onOpenNewProperty,
+  onNavigateHome,
   onNavigateDevelopments,
   onNavigateProperties,
   onNavigateBuyers,
@@ -211,6 +215,7 @@ export default function PropertiesGrid({
   } = useCustomizableGridColumns({
     entityKey: "property",
     defaultColumnIds: PROPERTY_COLUMN_IDS,
+    detailFieldIds: PROPERTY_DETAIL_FIELD_IDS,
     columnDefs,
     sortState,
     onSort: handleColumnSort,
@@ -221,113 +226,17 @@ export default function PropertiesGrid({
     useFillResizableColumnSizing(visibleColumnIds);
 
   return (
-    <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
-      <header className="dynamics-app-header" role="banner">
-        <div className="dynamics-app-header__brand">
-          <button type="button" className="dynamics-app-header__logo" aria-label="App launcher">
-            <PowerAppsAppLauncherIcon />
-          </button>
-          <span className="dynamics-app-header__product">Power Apps</span>
-          <span className="dynamics-app-header__pipe" aria-hidden="true">
-            |
-          </span>
-          <span className="dynamics-app-header__app">Property Management</span>
-          <span className="dynamics-app-header__divider" aria-hidden="true" />
-          <span className="dynamics-app-header__env">SANDBOX</span>
-        </div>
-        <div className="dynamics-app-header__actions">
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Search">
-            <SearchRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Refresh">
-            <ArrowClockwiseRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__icon-btn" aria-label="Settings">
-            <SettingsRegular />
-          </button>
-          <button type="button" className="dynamics-app-header__user" aria-label="Account">
-            AD
-          </button>
-        </div>
-      </header>
-
-      <div className="dynamics-app-body">
-        <nav
-          className={`dynamics-sitemap mda-sitemap ${sitemapCollapsed ? "dynamics-sitemap--collapsed" : ""}`}
-          aria-label="Site map"
-        >
-          <button
-            type="button"
-            className="dynamics-sitemap__toggle"
-            onClick={onToggleSitemap}
-            aria-label={sitemapCollapsed ? "Expand site map" : "Collapse site map"}
-            aria-expanded={!sitemapCollapsed}
-          >
-            <LineHorizontal3Regular className="dynamics-sitemap__toggle-icon" />
-          </button>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--pinned">
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <HomeRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Home</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <ClockRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Recent</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <PinRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Pinned</span>
-                <ChevronDownRegular className="dynamics-sitemap__chevron" />
-              </button>
-            </li>
-          </ul>
-                    <p className="mda-sitemap__group-label">Administration</p>
-          <ul className="dynamics-sitemap__list dynamics-sitemap__list--section">
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateDevelopments?.()}>
-                <PeopleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Developments</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item dynamics-sitemap__item--active" onClick={() => onNavigateProperties?.()}>
-                <BuildingRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Properties</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateBuyers?.()}>
-                <PersonCircleRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Buyers</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateContracts?.()}>
-                <DocumentTextRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Contracts</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item" onClick={() => onNavigateSalesStaff?.()}>
-                <PersonAccountsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Sales Staff</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" className="dynamics-sitemap__item">
-                <SettingsRegular className="dynamics-sitemap__icon" />
-                <span className="dynamics-sitemap__label">Settings</span>
-              </button>
-            </li>
-          </ul>
-</nav>
-
+    <DynamicsAppShell
+      activeNav="properties"
+      onNavigateHome={onNavigateHome}
+      onNavigateDevelopments={onNavigateDevelopments}
+      onNavigateProperties={onNavigateProperties}
+      onNavigateBuyers={onNavigateBuyers}
+      onNavigateContracts={onNavigateContracts}
+      onNavigateSalesStaff={onNavigateSalesStaff}
+      sitemapCollapsed={sitemapCollapsed}
+      onToggleSitemap={onToggleSitemap}
+    >
         <main className="dynamics-main">
           <div className="dynamics-main-surface">
             <div className="dynamics-surface-card dynamics-surface-card--command">
@@ -535,7 +444,6 @@ export default function PropertiesGrid({
             </div>
           </div>
         </main>
-      </div>
-    </div>
+    </DynamicsAppShell>
   );
 }

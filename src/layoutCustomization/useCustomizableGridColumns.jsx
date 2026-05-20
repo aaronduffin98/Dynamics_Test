@@ -7,6 +7,7 @@ import { useLayoutCustomization } from "./LayoutCustomizationContext.jsx";
  * @param {object} options
  * @param {string} options.entityKey
  * @param {string[]} options.defaultColumnIds
+ * @param {string[]} [options.detailFieldIds] — builtin detail field ids (loads customFields from same entityKey)
  * @param {Record<string, { label: string, compare?: Function, renderCell: Function }>} options.columnDefs
  * @param {{ sortColumn: string, sortDirection: string }} options.sortState
  * @param {Function} options.onSort
@@ -15,6 +16,7 @@ import { useLayoutCustomization } from "./LayoutCustomizationContext.jsx";
 export default function useCustomizableGridColumns({
   entityKey,
   defaultColumnIds,
+  detailFieldIds = [],
   columnDefs,
   sortState,
   onSort,
@@ -23,9 +25,10 @@ export default function useCustomizableGridColumns({
   const {
     gridEditMode,
     layouts,
+    getLayout,
     getGridLayout,
     reorderGridColumns,
-    restoreGridColumn,
+    addGridColumn,
     removeGridColumn,
     resetGridLayout,
   } = useLayoutCustomization();
@@ -35,6 +38,11 @@ export default function useCustomizableGridColumns({
   const gridLayout = useMemo(
     () => getGridLayout(entityKey, defaultColumnIds),
     [layouts, entityKey, defaultColumnIds, getGridLayout],
+  );
+
+  const entityLayout = useMemo(
+    () => getLayout(entityKey, detailFieldIds),
+    [layouts, entityKey, detailFieldIds, getLayout],
   );
 
   const visibleColumnIds = useMemo(
@@ -49,9 +57,19 @@ export default function useCustomizableGridColumns({
     [gridLayout.customColumns],
   );
 
+  const detailCustomFieldsKey = useMemo(
+    () => entityLayout.customFields.map((f) => `${f.id}:${f.label}:${f.value}`).join("|"),
+    [entityLayout.customFields],
+  );
+
   const customById = useMemo(
     () => new Map(gridLayout.customColumns.map((c) => [c.id, c])),
     [customColumnsKey],
+  );
+
+  const detailCustomById = useMemo(
+    () => new Map(entityLayout.customFields.map((f) => [f.id, f])),
+    [detailCustomFieldsKey],
   );
 
   const handleColumnDragEnd = useCallback(
@@ -75,16 +93,38 @@ export default function useCustomizableGridColumns({
 
   const addableColumns = useMemo(() => {
     const visibleSet = new Set(visibleColumnIds);
-    return sourceColumnIds
-      .filter((id) => !visibleSet.has(id) && columnDefs[id])
-      .map((id) => ({ id, label: columnDefs[id].label }));
-  }, [sourceColumnIds, visibleColumnIds, columnDefs]);
+    const seen = new Set();
+    const result = [];
+
+    sourceColumnIds.forEach((id) => {
+      if (!visibleSet.has(id) && columnDefs[id] && !seen.has(id)) {
+        seen.add(id);
+        result.push({ id, label: columnDefs[id].label });
+      }
+    });
+
+    entityLayout.customFields.forEach((f) => {
+      if (!visibleSet.has(f.id) && !seen.has(f.id)) {
+        seen.add(f.id);
+        result.push({ id: f.id, label: f.label });
+      }
+    });
+
+    gridLayout.customColumns.forEach((c) => {
+      if (!visibleSet.has(c.id) && !seen.has(c.id)) {
+        seen.add(c.id);
+        result.push({ id: c.id, label: c.label });
+      }
+    });
+
+    return result;
+  }, [sourceColumnIds, visibleColumnIds, columnDefs, entityLayout.customFields, gridLayout.customColumns]);
 
   const handleAddColumn = useCallback(
     (columnId) => {
-      restoreGridColumn(entityKey, defaultColumnIds, columnId);
+      addGridColumn(entityKey, defaultColumnIds, detailFieldIds, columnId);
     },
-    [restoreGridColumn, entityKey, defaultColumnIds],
+    [addGridColumn, entityKey, defaultColumnIds, detailFieldIds],
   );
 
   const handleResetGridLayout = useCallback(() => {
@@ -119,6 +159,37 @@ export default function useCustomizableGridColumns({
           });
         }
 
+        const detailField = detailCustomById.get(columnId);
+        if (detailField) {
+          return createTableColumn({
+            columnId: detailField.id,
+            compare: () => 0,
+            renderHeaderCell: () => (
+              <GridColumnEditHeader
+                columnId={detailField.id}
+                label={detailField.label}
+                gridEditMode={gridEditMode}
+                onRemove={handleRemoveColumn}
+                sortState={sortState}
+                onSort={onSort}
+                onMockCommand={onMockCommand}
+              />
+            ),
+            renderCell: (item) => {
+              const rowVal = item[columnId];
+              const text =
+                rowVal !== undefined && rowVal !== null
+                  ? String(rowVal)
+                  : (detailField.value ?? "—");
+              return (
+                <TableCellLayout truncate title={text}>
+                  {text}
+                </TableCellLayout>
+              );
+            },
+          });
+        }
+
         const def = columnDefs[columnId];
         if (!def) return null;
 
@@ -143,6 +214,7 @@ export default function useCustomizableGridColumns({
   }, [
     columnIdsKey,
     customColumnsKey,
+    detailCustomFieldsKey,
     columnDefs,
     gridEditMode,
     handleRemoveColumn,
@@ -150,6 +222,7 @@ export default function useCustomizableGridColumns({
     onSort,
     onMockCommand,
     customById,
+    detailCustomById,
   ]);
 
   return {
