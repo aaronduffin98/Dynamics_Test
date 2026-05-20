@@ -42,6 +42,7 @@ import {
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
 import { BUYER_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
@@ -361,24 +362,36 @@ export default function BuyerDetailView({
                 </div>
               </section>
 
-              <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Buyer details">
-                  {activeTab === "general" ? (
-                    <CustomizableFieldSection
-                      entityKey="buyer"
-                      record={buyer}
-                      fields={BUYER_DETAIL_FIELDS}
-                      context={{ onOpenDevelopment }}
-                    />
-                  ) : (
-                    <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">Related records appear here in a full model-driven app.</p>
-                    </div>
-                  )}
-                </section>
-
-                <RecordTimelineAside createdShort={createdShort} />
-              </div>
+              <CustomizableCardGrid
+                entityKey="buyer"
+                cards={{
+                  form: {
+                    label: "Buyer details",
+                    render: () => (
+                      <section className="mda-record-card mda-record-card--form" aria-label="Buyer details">
+                        {activeTab === "general" ? (
+                          <CustomizableFieldSection
+                            entityKey="buyer"
+                            record={buyer}
+                            fields={BUYER_DETAIL_FIELDS}
+                            context={{ onOpenDevelopment }}
+                          />
+                        ) : (
+                          <div className="mda-detail-related">
+                            <p className="mda-related-placeholder__text">
+                              Related records appear here in a full model-driven app.
+                            </p>
+                          </div>
+                        )}
+                      </section>
+                    ),
+                  },
+                  timeline: {
+                    label: "Timeline",
+                    render: () => <RecordTimelineAside createdShort={createdShort} />,
+                  },
+                }}
+              />
             </div>
           </div>
         </main>

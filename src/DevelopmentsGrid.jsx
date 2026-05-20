@@ -16,7 +16,6 @@ import {
   MenuPopover,
   MenuTrigger,
   TableCellLayout,
-  createTableColumn,
 } from "@fluentui/react-components";
 import {
   AddRegular,
@@ -48,10 +47,13 @@ import {
 } from "@fluentui/react-icons";
 import {
   DynamicsViewTitlePicker,
-  HeaderMenu,
   dynamicsListDateFmt as dateFmt,
   useFillResizableColumnSizing,
 } from "./dynamicsListViewHelpers.jsx";
+import GridColumnEditToolbar from "./layoutCustomization/GridColumnEditToolbar.jsx";
+import GridHeaderDnD from "./layoutCustomization/GridHeaderDnD.jsx";
+import { useLayoutCustomization } from "./layoutCustomization/LayoutCustomizationContext.jsx";
+import useCustomizableGridColumns from "./layoutCustomization/useCustomizableGridColumns.jsx";
 
 const DEVELOPMENT_COLUMN_IDS = [
   "developmentId",
@@ -123,21 +125,13 @@ export default function DevelopmentsGrid({
     );
   }, [filter, developments]);
 
-  const columns = useMemo(() => {
-    const headerOf = (columnId, label) => (
-      <HeaderMenu
-        columnId={columnId}
-        label={label}
-        sortState={sortState}
-        onSort={handleColumnSort}
-        onMockCommand={onMockCommand}
-      />
-    );
-    return [
-      createTableColumn({
-        columnId: "developmentId",
+  const { toggleEditMode, gridEditMode } = useLayoutCustomization();
+
+  const columnDefs = useMemo(
+    () => ({
+      developmentId: {
+        label: "Development ID",
         compare: (a, b) => a.developmentId.localeCompare(b.developmentId),
-        renderHeaderCell: () => headerOf("developmentId", "Development ID"),
         renderCell: (item) => (
           <button
             type="button"
@@ -151,60 +145,71 @@ export default function DevelopmentsGrid({
             {item.developmentId}
           </button>
         ),
-      }),
-      createTableColumn({
-        columnId: "name",
+      },
+      name: {
+        label: "Name",
         compare: (a, b) => a.name.localeCompare(b.name),
-        renderHeaderCell: () => headerOf("name", "Name"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.name}>
             {item.name}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "location",
+      },
+      location: {
+        label: "Location",
         compare: (a, b) => a.location.localeCompare(b.location),
-        renderHeaderCell: () => headerOf("location", "Location"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.location}>
             {item.location}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "status",
+      },
+      status: {
+        label: "Status",
         compare: (a, b) => a.status.localeCompare(b.status),
-        renderHeaderCell: () => headerOf("status", "Status"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.status}>
             {item.status}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "totalUnits",
+      },
+      totalUnits: {
+        label: "Total Units",
         compare: (a, b) => a.totalUnits - b.totalUnits,
-        renderHeaderCell: () => headerOf("totalUnits", "Total Units"),
         renderCell: (item) => item.totalUnits,
-      }),
-      createTableColumn({
-        columnId: "ownerName",
+      },
+      ownerName: {
+        label: "Owner",
         compare: (a, b) => a.ownerName.localeCompare(b.ownerName),
-        renderHeaderCell: () => headerOf("ownerName", "Owner"),
         renderCell: (item) => <OwnerCell name={item.ownerName} />,
-      }),
-      createTableColumn({
-        columnId: "createdOn",
+      },
+      createdOn: {
+        label: "Created On",
         compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => headerOf("createdOn", "Created On"),
         renderCell: (item) => dateFmt.format(item.createdOn),
-      }),
-    ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenDevelopment]);
+      },
+    }),
+    [onOpenDevelopment],
+  );
+
+  const {
+    columns,
+    visibleColumnIds,
+    addableColumns,
+    handleColumnDragEnd,
+    handleAddColumn,
+    handleResetGridLayout,
+  } = useCustomizableGridColumns({
+    entityKey: "development",
+    defaultColumnIds: DEVELOPMENT_COLUMN_IDS,
+    columnDefs,
+    sortState,
+    onSort: handleColumnSort,
+    onMockCommand,
+  });
 
   const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
-    useFillResizableColumnSizing(DEVELOPMENT_COLUMN_IDS);
+    useFillResizableColumnSizing(visibleColumnIds);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -431,9 +436,14 @@ export default function DevelopmentsGrid({
                     />
                   </div>
                   <div className="dynamics-view-toolbar__controls">
-                    <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
+                    <button
+                      type="button"
+                      className={`dynamics-view-toolbar__link dynamics-view-toolbar__link--icon${gridEditMode ? " dynamics-view-toolbar__link--active" : ""}`}
+                      onClick={toggleEditMode}
+                      aria-pressed={gridEditMode}
+                    >
                       <ColumnTripleEditRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
-                      Edit columns
+                      {gridEditMode ? "Done editing columns" : "Edit columns"}
                     </button>
                     <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
                       <FilterRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
@@ -451,6 +461,13 @@ export default function DevelopmentsGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
+                  {gridEditMode ? (
+                    <GridColumnEditToolbar
+                      addableColumns={addableColumns}
+                      onAddColumn={handleAddColumn}
+                      onReset={handleResetGridLayout}
+                    />
+                  ) : null}
                   <div
                     ref={scrollRef}
                     className="dynamics-grid-scroll dynamics-grid-scroll--list"
@@ -477,11 +494,17 @@ export default function DevelopmentsGrid({
                         aria-label="Developments — sortable, resizable columns"
                       >
                         <DataGridHeader>
-                          <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
-                            {({ renderHeaderCell }) => (
-                              <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-                            )}
-                          </DataGridRow>
+                          <GridHeaderDnD
+                            gridEditMode={gridEditMode}
+                            sortableIds={visibleColumnIds}
+                            onDragEnd={handleColumnDragEnd}
+                          >
+                            <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
+                              {({ renderHeaderCell }) => (
+                                <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
+                              )}
+                            </DataGridRow>
+                          </GridHeaderDnD>
                         </DataGridHeader>
                         <DataGridBody>
                           {({ item, rowId }) => (

@@ -42,6 +42,7 @@ import {
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
 import { CONTRACT_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
@@ -360,24 +361,34 @@ export default function ContractDetailView({
                 </div>
               </section>
 
-              <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Contract details">
-                  {activeTab === "general" ? (
-                    <CustomizableFieldSection
-                      entityKey="contract"
-                      record={contract}
-                      fields={CONTRACT_DETAIL_FIELDS}
-                      context={{ contractDateLabel }}
-                    />
-                  ) : (
-                    <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">No related records to show.</p>
-                    </div>
-                  )}
-                </section>
-
-                <RecordTimelineAside createdShort={createdShort} />
-              </div>
+              <CustomizableCardGrid
+                entityKey="contract"
+                cards={{
+                  form: {
+                    label: "Contract details",
+                    render: () => (
+                      <section className="mda-record-card mda-record-card--form" aria-label="Contract details">
+                        {activeTab === "general" ? (
+                          <CustomizableFieldSection
+                            entityKey="contract"
+                            record={contract}
+                            fields={CONTRACT_DETAIL_FIELDS}
+                            context={{ contractDateLabel }}
+                          />
+                        ) : (
+                          <div className="mda-detail-related">
+                            <p className="mda-related-placeholder__text">No related records to show.</p>
+                          </div>
+                        )}
+                      </section>
+                    ),
+                  },
+                  timeline: {
+                    label: "Timeline",
+                    render: () => <RecordTimelineAside createdShort={createdShort} />,
+                  },
+                }}
+              />
             </div>
           </div>
         </main>

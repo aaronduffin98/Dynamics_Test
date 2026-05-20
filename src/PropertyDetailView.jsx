@@ -42,6 +42,7 @@ import {
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
 import { PROPERTY_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
@@ -368,24 +369,36 @@ export default function PropertyDetailView({
                 </div>
               </section>
 
-              <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Property details">
-                  {activeTab === "general" ? (
-                    <CustomizableFieldSection
-                      entityKey="property"
-                      record={property}
-                      fields={PROPERTY_DETAIL_FIELDS}
-                      context={{ priceLabel, onOpenDevelopment }}
-                    />
-                  ) : (
-                    <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">Related records appear here in a full model-driven app.</p>
-                    </div>
-                  )}
-                </section>
-
-                <RecordTimelineAside createdShort={createdShort} />
-              </div>
+              <CustomizableCardGrid
+                entityKey="property"
+                cards={{
+                  form: {
+                    label: "Property details",
+                    render: () => (
+                      <section className="mda-record-card mda-record-card--form" aria-label="Property details">
+                        {activeTab === "general" ? (
+                          <CustomizableFieldSection
+                            entityKey="property"
+                            record={property}
+                            fields={PROPERTY_DETAIL_FIELDS}
+                            context={{ priceLabel, onOpenDevelopment }}
+                          />
+                        ) : (
+                          <div className="mda-detail-related">
+                            <p className="mda-related-placeholder__text">
+                              Related records appear here in a full model-driven app.
+                            </p>
+                          </div>
+                        )}
+                      </section>
+                    ),
+                  },
+                  timeline: {
+                    label: "Timeline",
+                    render: () => <RecordTimelineAside createdShort={createdShort} />,
+                  },
+                }}
+              />
             </div>
           </div>
         </main>

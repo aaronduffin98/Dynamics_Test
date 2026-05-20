@@ -42,6 +42,7 @@ import {
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
 import { SALES_STAFF_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
@@ -360,24 +361,34 @@ export default function SalesStaffDetailView({
                 </div>
               </section>
 
-              <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Sales Staff details">
-                  {activeTab === "general" ? (
-                    <CustomizableFieldSection
-                      entityKey="salesStaff"
-                      record={salesStaff}
-                      fields={SALES_STAFF_DETAIL_FIELDS}
-                      context={{ createdLabel }}
-                    />
-                  ) : (
-                    <div className="mda-detail-related">
-                      <p className="mda-related-placeholder__text">No related records to show.</p>
-                    </div>
-                  )}
-                </section>
-
-                <RecordTimelineAside createdShort={createdShort} />
-              </div>
+              <CustomizableCardGrid
+                entityKey="salesStaff"
+                cards={{
+                  form: {
+                    label: "Sales Staff details",
+                    render: () => (
+                      <section className="mda-record-card mda-record-card--form" aria-label="Sales Staff details">
+                        {activeTab === "general" ? (
+                          <CustomizableFieldSection
+                            entityKey="salesStaff"
+                            record={salesStaff}
+                            fields={SALES_STAFF_DETAIL_FIELDS}
+                            context={{ createdLabel }}
+                          />
+                        ) : (
+                          <div className="mda-detail-related">
+                            <p className="mda-related-placeholder__text">No related records to show.</p>
+                          </div>
+                        )}
+                      </section>
+                    ),
+                  },
+                  timeline: {
+                    label: "Timeline",
+                    render: () => <RecordTimelineAside createdShort={createdShort} />,
+                  },
+                }}
+              />
             </div>
           </div>
         </main>

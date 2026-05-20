@@ -1,4 +1,4 @@
-import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Input,
   Menu,
@@ -35,36 +35,54 @@ const SELECTION_COLUMN_WIDTH = 44;
  * Full-width column sizing with draggable resize handles.
  * Fills the grid on load and window resize; widths the user sets are kept.
  */
+function defaultSizingEntry(minWidth) {
+  return { minWidth, defaultWidth: minWidth, idealWidth: minWidth };
+}
+
 export function useFillResizableColumnSizing(columnIds, options = {}) {
   const minWidth = options.minWidth ?? 80;
   const scrollRef = useRef(null);
   const userSizedRef = useRef(new Set());
+  const columnIdsKey = columnIds.join("|");
 
   const [columnSizingOptions, setColumnSizingOptions] = useState(() =>
-    Object.fromEntries(
-      columnIds.map((id) => [id, { minWidth, defaultWidth: minWidth, idealWidth: minWidth }])
-    )
+    Object.fromEntries(columnIds.map((id) => [id, defaultSizingEntry(minWidth)])),
   );
+
+  useEffect(() => {
+    const ids = columnIdsKey ? columnIdsKey.split("|") : [];
+    const idSet = new Set(ids);
+
+    for (const id of [...userSizedRef.current]) {
+      if (!idSet.has(id)) userSizedRef.current.delete(id);
+    }
+
+    setColumnSizingOptions((prev) => {
+      const next = {};
+      for (const id of ids) {
+        next[id] = prev[id] ?? defaultSizingEntry(minWidth);
+      }
+      const prevKeys = Object.keys(prev);
+      if (prevKeys.length === ids.length && ids.every((id) => prev[id] === next[id])) {
+        return prev;
+      }
+      return next;
+    });
+  }, [columnIdsKey, minWidth]);
 
   const distributeWidths = useCallback(() => {
     const el = scrollRef.current;
-    if (!el || columnIds.length === 0) return;
+    const ids = columnIdsKey ? columnIdsKey.split("|") : [];
+    if (!el || ids.length === 0) return;
 
-    const available = Math.max(
-      columnIds.length * minWidth,
-      el.clientWidth - SELECTION_COLUMN_WIDTH
-    );
+    const available = Math.max(ids.length * minWidth, el.clientWidth - SELECTION_COLUMN_WIDTH);
 
     setColumnSizingOptions((prev) => {
-      const fixedTotal = columnIds
+      const fixedTotal = ids
         .filter((id) => userSizedRef.current.has(id))
-        .reduce(
-          (sum, id) =>
-            sum + (prev[id]?.idealWidth ?? prev[id]?.defaultWidth ?? minWidth),
-          0
-        );
+        .reduce((sum, id) => sum + (prev[id]?.idealWidth ?? prev[id]?.defaultWidth ?? minWidth), 0);
 
-      const flexIds = columnIds.filter((id) => !userSizedRef.current.has(id));
+      const flexIds = ids.filter((id) => !userSizedRef.current.has(id));
       if (flexIds.length === 0) return prev;
 
       const remaining = Math.max(flexIds.length * minWidth, available - fixedTotal);
@@ -81,7 +99,7 @@ export function useFillResizableColumnSizing(columnIds, options = {}) {
       }
       return changed ? next : prev;
     });
-  }, [columnIds, minWidth]);
+  }, [columnIdsKey, minWidth]);
 
   useLayoutEffect(() => {
     distributeWidths();

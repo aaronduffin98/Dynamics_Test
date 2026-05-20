@@ -39,6 +39,7 @@ import {
 } from "@fluentui/react-icons";
 import PowerAppsAppLauncherIcon from "./PowerAppsAppLauncherIcon.jsx";
 import RecordTimelineAside from "./detailRecord/RecordTimelineAside.jsx";
+import CustomizableCardGrid from "./layoutCustomization/CustomizableCardGrid.jsx";
 import CustomizableFieldSection from "./layoutCustomization/CustomizableFieldSection.jsx";
 import { DEVELOPMENT_DETAIL_FIELDS } from "./layoutCustomization/detailFieldConfigs.jsx";
 import "./StudentsGrid.css";
@@ -364,27 +365,37 @@ export default function DevelopmentDetailView({
                 </div>
               </section>
 
-              <div className="mda-detail-record-grid">
-                <section className="mda-record-card mda-record-card--form" aria-label="Development details">
-                  {activeTab === "general" ? (
-                    <CustomizableFieldSection
-                      entityKey="development"
-                      record={development}
-                      fields={DEVELOPMENT_DETAIL_FIELDS}
-                      context={{ createdLabel }}
-                    />
-                  ) : (
-                    <div className="mda-related-placeholder">
-                      <p className="mda-related-placeholder__text">
-                        Related properties, buyers, and contracts appear here in a full model-driven app. This prototype uses
-                        the General tab for development information.
-                      </p>
-                    </div>
-                  )}
-                </section>
-
-                <RecordTimelineAside createdShort={createdShort} />
-              </div>
+              <CustomizableCardGrid
+                entityKey="development"
+                cards={{
+                  form: {
+                    label: "Development details",
+                    render: () => (
+                      <section className="mda-record-card mda-record-card--form" aria-label="Development details">
+                        {activeTab === "general" ? (
+                          <CustomizableFieldSection
+                            entityKey="development"
+                            record={development}
+                            fields={DEVELOPMENT_DETAIL_FIELDS}
+                            context={{ createdLabel }}
+                          />
+                        ) : (
+                          <div className="mda-related-placeholder">
+                            <p className="mda-related-placeholder__text">
+                              Related properties, buyers, and contracts appear here in a full model-driven app. This
+                              prototype uses the General tab for development information.
+                            </p>
+                          </div>
+                        )}
+                      </section>
+                    ),
+                  },
+                  timeline: {
+                    label: "Timeline",
+                    render: () => <RecordTimelineAside createdShort={createdShort} />,
+                  },
+                }}
+              />
             </div>
           </div>
         </main>

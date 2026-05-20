@@ -15,7 +15,6 @@ import {
   MenuPopover,
   MenuTrigger,
   TableCellLayout,
-  createTableColumn,
 } from "@fluentui/react-components";
 import {
   AddRegular,
@@ -51,9 +50,12 @@ import {
 } from "@fluentui/react-icons";
 import {
   DynamicsViewTitlePicker,
-  HeaderMenu,
   useFillResizableColumnSizing,
 } from "./dynamicsListViewHelpers.jsx";
+import GridColumnEditToolbar from "./layoutCustomization/GridColumnEditToolbar.jsx";
+import GridHeaderDnD from "./layoutCustomization/GridHeaderDnD.jsx";
+import { useLayoutCustomization } from "./layoutCustomization/LayoutCustomizationContext.jsx";
+import useCustomizableGridColumns from "./layoutCustomization/useCustomizableGridColumns.jsx";
 
 const BUYER_COLUMN_IDS = [
   "buyerId",
@@ -114,21 +116,13 @@ export default function BuyersGrid({
     );
   }, [filter, enrichedBuyers]);
 
-  const columns = useMemo(() => {
-    const headerOf = (columnId, label) => (
-      <HeaderMenu
-        columnId={columnId}
-        label={label}
-        sortState={sortState}
-        onSort={handleColumnSort}
-        onMockCommand={onMockCommand}
-      />
-    );
-    return [
-      createTableColumn({
-        columnId: "buyerId",
+  const { toggleEditMode, gridEditMode } = useLayoutCustomization();
+
+  const columnDefs = useMemo(
+    () => ({
+      buyerId: {
+        label: "Buyer ID",
         compare: (a, b) => a.buyerId.localeCompare(b.buyerId),
-        renderHeaderCell: () => headerOf("buyerId", "Buyer ID"),
         renderCell: (item) => (
           <button
             type="button"
@@ -142,52 +136,65 @@ export default function BuyersGrid({
             {item.buyerId}
           </button>
         ),
-      }),
-      createTableColumn({
-        columnId: "fullName",
+      },
+      fullName: {
+        label: "Name",
         compare: (a, b) => a.fullName.localeCompare(b.fullName),
-        renderHeaderCell: () => headerOf("fullName", "Name"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.fullName}>
             {item.fullName}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "email",
+      },
+      email: {
+        label: "Email",
         compare: (a, b) => a.email.localeCompare(b.email),
-        renderHeaderCell: () => headerOf("email", "Email"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.email}>
             {item.email}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "phone",
+      },
+      phone: {
+        label: "Phone",
         compare: (a, b) => a.phone.localeCompare(b.phone),
-        renderHeaderCell: () => headerOf("phone", "Phone"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.phone}>
             {item.phone}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "interestedDevelopmentName",
+      },
+      interestedDevelopmentName: {
+        label: "Interested Development",
         compare: (a, b) => a.interestedDevelopmentName.localeCompare(b.interestedDevelopmentName),
-        renderHeaderCell: () => headerOf("interestedDevelopmentName", "Interested Development"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.interestedDevelopmentName}>
             {item.interestedDevelopmentName}
           </TableCellLayout>
         ),
-      }),
-    ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenBuyer]);
+      },
+    }),
+    [onOpenBuyer],
+  );
+
+  const {
+    columns,
+    visibleColumnIds,
+    addableColumns,
+    handleColumnDragEnd,
+    handleAddColumn,
+    handleResetGridLayout,
+  } = useCustomizableGridColumns({
+    entityKey: "buyer",
+    defaultColumnIds: BUYER_COLUMN_IDS,
+    columnDefs,
+    sortState,
+    onSort: handleColumnSort,
+    onMockCommand,
+  });
 
   const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
-    useFillResizableColumnSizing(BUYER_COLUMN_IDS);
+    useFillResizableColumnSizing(visibleColumnIds);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -404,9 +411,14 @@ export default function BuyersGrid({
                     />
                   </div>
                   <div className="dynamics-view-toolbar__controls">
-                    <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
+                    <button
+                      type="button"
+                      className={`dynamics-view-toolbar__link dynamics-view-toolbar__link--icon${gridEditMode ? " dynamics-view-toolbar__link--active" : ""}`}
+                      onClick={toggleEditMode}
+                      aria-pressed={gridEditMode}
+                    >
                       <ColumnTripleEditRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
-                      Edit columns
+                      {gridEditMode ? "Done editing columns" : "Edit columns"}
                     </button>
                     <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
                       <FilterRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
@@ -424,6 +436,13 @@ export default function BuyersGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
+                  {gridEditMode ? (
+                    <GridColumnEditToolbar
+                      addableColumns={addableColumns}
+                      onAddColumn={handleAddColumn}
+                      onReset={handleResetGridLayout}
+                    />
+                  ) : null}
                   <div
                     ref={scrollRef}
                     className="dynamics-grid-scroll dynamics-grid-scroll--list"
@@ -450,11 +469,17 @@ export default function BuyersGrid({
                         aria-label="Buyers — sortable, resizable columns"
                       >
                         <DataGridHeader>
-                          <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
-                            {({ renderHeaderCell }) => (
-                              <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-                            )}
-                          </DataGridRow>
+                          <GridHeaderDnD
+                            gridEditMode={gridEditMode}
+                            sortableIds={visibleColumnIds}
+                            onDragEnd={handleColumnDragEnd}
+                          >
+                            <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
+                              {({ renderHeaderCell }) => (
+                                <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
+                              )}
+                            </DataGridRow>
+                          </GridHeaderDnD>
                         </DataGridHeader>
                         <DataGridBody>
                           {({ item, rowId }) => (

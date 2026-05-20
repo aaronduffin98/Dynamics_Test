@@ -309,22 +309,39 @@
   outline-offset: -2px;
 }
 
-/* Workspace layout — wider form (~65%), narrower timeline (~35%) */
+/* Workspace layout — default 2 columns; 1-column via modifier from CustomizableCardGrid */
 .mda-detail-record-grid {
   display: grid;
-  grid-template-columns: minmax(0, 13fr) minmax(0, 7fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
   align-items: stretch;
   margin-top: 0;
   width: 100%;
 }
 
-.mda-detail-record-grid > .mda-record-card {
+.mda-detail-record-grid--columns-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mda-detail-record-grid--columns-2 {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.mda-detail-record-grid > .mda-record-card,
+.mda-detail-record-grid > .layout-edit-card__slot,
+.mda-detail-record-grid > .layout-edit-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   margin-top: 0;
+}
+
+/* Per-card page width: full row vs half (50%) in the 2-column grid */
+.mda-detail-record-grid .layout-card-slot--width-full,
+.mda-detail-record-grid > .layout-edit-card.layout-card-slot--width-full,
+.mda-detail-record-grid > .layout-edit-card__slot.layout-card-slot--width-full {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 1200px) {

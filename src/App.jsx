@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import EditModeFab from "./layoutCustomization/EditModeFab.jsx";
 import {
   DETAIL_VIEW_TYPES,
+  LIST_VIEW_TYPES,
   LayoutCustomizationProvider,
 } from "./layoutCustomization/LayoutCustomizationContext.jsx";
 import "./layoutCustomization/LayoutEditMode.css";
@@ -150,10 +151,11 @@ export default function App() {
   };
 
   const isRecordDetailView = DETAIL_VIEW_TYPES.has(view.type);
+  const isListView = LIST_VIEW_TYPES.has(view.type);
 
   return (
     <FluentProvider theme={webLightTheme}>
-      <LayoutCustomizationProvider isRecordDetailView={isRecordDetailView}>
+      <LayoutCustomizationProvider isRecordDetailView={isRecordDetailView} isListView={isListView}>
       {view.type === "newDevelopment" ? (
         <NewDevelopmentForm
           existingDevelopments={developments}

@@ -9,7 +9,6 @@ import {
   DataGridRow,
   Input,
   TableCellLayout,
-  createTableColumn,
 } from "@fluentui/react-components";
 import {
   AddRegular,
@@ -45,10 +44,13 @@ import {
 } from "@fluentui/react-icons";
 import {
   DynamicsViewTitlePicker,
-  HeaderMenu,
   dynamicsListDateFmt as dateFmt,
   useFillResizableColumnSizing,
 } from "./dynamicsListViewHelpers.jsx";
+import GridColumnEditToolbar from "./layoutCustomization/GridColumnEditToolbar.jsx";
+import GridHeaderDnD from "./layoutCustomization/GridHeaderDnD.jsx";
+import { useLayoutCustomization } from "./layoutCustomization/LayoutCustomizationContext.jsx";
+import useCustomizableGridColumns from "./layoutCustomization/useCustomizableGridColumns.jsx";
 
 const SALES_STAFF_COLUMN_IDS = [
   "salesStaffId",
@@ -108,21 +110,13 @@ export default function SalesStaffGrid({
     );
   }, [filter, salesStaff]);
 
-  const columns = useMemo(() => {
-    const headerOf = (columnId, label) => (
-      <HeaderMenu
-        columnId={columnId}
-        label={label}
-        sortState={sortState}
-        onSort={handleColumnSort}
-        onMockCommand={onMockCommand}
-      />
-    );
-    return [
-      createTableColumn({
-        columnId: "salesStaffId",
+  const { toggleEditMode, gridEditMode } = useLayoutCustomization();
+
+  const columnDefs = useMemo(
+    () => ({
+      salesStaffId: {
+        label: "Sales Staff ID",
         compare: (a, b) => a.salesStaffId.localeCompare(b.salesStaffId),
-        renderHeaderCell: () => headerOf("staffId", "Sales Staff ID"),
         renderCell: (item) => (
           <button
             type="button"
@@ -136,58 +130,70 @@ export default function SalesStaffGrid({
             {item.salesStaffId}
           </button>
         ),
-      }),
-      createTableColumn({
-        columnId: "name",
+      },
+      name: {
+        label: "Name",
         compare: (a, b) => a.name.localeCompare(b.name),
-        renderHeaderCell: () => headerOf("name", "Name"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.name}>
             {item.name}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "role",
+      },
+      role: {
+        label: "Role",
         compare: (a, b) => a.role.localeCompare(b.role),
-        renderHeaderCell: () => headerOf("role", "Role"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.role}>
             {item.role}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "assignedDevelopment",
+      },
+      assignedDevelopment: {
+        label: "Assigned Development",
         compare: (a, b) => a.assignedDevelopmentName.localeCompare(b.assignedDevelopmentName),
-        renderHeaderCell: () => headerOf("assignedDevelopment", "Assigned Development"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.assignedDevelopmentName}>
             {item.assignedDevelopmentName}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "email",
+      },
+      email: {
+        label: "Email",
         compare: (a, b) => a.email.localeCompare(b.email),
-        renderHeaderCell: () => headerOf("email", "Email"),
         renderCell: (item) => (
           <TableCellLayout truncate title={item.email}>
             {item.email}
           </TableCellLayout>
         ),
-      }),
-      createTableColumn({
-        columnId: "createdOn",
+      },
+      createdOn: {
+        label: "Created On",
         compare: (a, b) => a.createdOn.getTime() - b.createdOn.getTime(),
-        renderHeaderCell: () => headerOf("createdOn", "Created On"),
         renderCell: (item) => dateFmt.format(item.createdOn),
-      }),
-    ];
-  }, [sortState, handleColumnSort, onMockCommand, onOpenSalesStaff]);
+      },
+    }),
+    [onOpenSalesStaff],
+  );
+
+  const {
+    columns,
+    visibleColumnIds,
+    addableColumns,
+    handleColumnDragEnd,
+    handleAddColumn,
+    handleResetGridLayout,
+  } = useCustomizableGridColumns({
+    entityKey: "salesStaff",
+    defaultColumnIds: SALES_STAFF_COLUMN_IDS,
+    columnDefs,
+    sortState,
+    onSort: handleColumnSort,
+    onMockCommand,
+  });
 
   const { scrollRef, columnSizingOptions, onColumnResize, resizableColumnsOptions } =
-    useFillResizableColumnSizing(SALES_STAFF_COLUMN_IDS);
+    useFillResizableColumnSizing(visibleColumnIds);
 
   return (
     <div className={`dynamics-app ${sitemapCollapsed ? "dynamics-app--sitemap-collapsed" : ""}`}>
@@ -409,9 +415,14 @@ export default function SalesStaffGrid({
                     />
                   </div>
                   <div className="dynamics-view-toolbar__controls">
-                    <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
+                    <button
+                      type="button"
+                      className={`dynamics-view-toolbar__link dynamics-view-toolbar__link--icon${gridEditMode ? " dynamics-view-toolbar__link--active" : ""}`}
+                      onClick={toggleEditMode}
+                      aria-pressed={gridEditMode}
+                    >
                       <ColumnTripleEditRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
-                      Edit columns
+                      {gridEditMode ? "Done editing columns" : "Edit columns"}
                     </button>
                     <button type="button" className="dynamics-view-toolbar__link dynamics-view-toolbar__link--icon">
                       <FilterRegular className="dynamics-view-toolbar__link-icon" aria-hidden="true" />
@@ -429,6 +440,13 @@ export default function SalesStaffGrid({
                 </div>
 
                 <div className="dynamics-grid-card">
+                  {gridEditMode ? (
+                    <GridColumnEditToolbar
+                      addableColumns={addableColumns}
+                      onAddColumn={handleAddColumn}
+                      onReset={handleResetGridLayout}
+                    />
+                  ) : null}
                   <div ref={scrollRef} className="dynamics-grid-scroll dynamics-grid-scroll--list">
                     <div className="dynamics-grid-scroll__inner">
                       <DataGrid
@@ -452,11 +470,17 @@ export default function SalesStaffGrid({
                         aria-label="Sales Staff — sortable, resizable columns"
                       >
                         <DataGridHeader>
-                          <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
-                            {({ renderHeaderCell }) => (
-                              <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-                            )}
-                          </DataGridRow>
+                          <GridHeaderDnD
+                            gridEditMode={gridEditMode}
+                            sortableIds={visibleColumnIds}
+                            onDragEnd={handleColumnDragEnd}
+                          >
+                            <DataGridRow selectionCell={{ "aria-label": "Select all rows" }}>
+                              {({ renderHeaderCell }) => (
+                                <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
+                              )}
+                            </DataGridRow>
+                          </GridHeaderDnD>
                         </DataGridHeader>
                         <DataGridBody>
                           {({ item, rowId }) => (

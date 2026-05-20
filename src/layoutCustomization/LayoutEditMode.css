@@ -514,3 +514,492 @@
 .layout-edit-reset:hover {
   color: #106ebe;
 }
+
+/* --- Card-level layout customization --- */
+.layout-card-grid-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.layout-edit-card-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.layout-edit-card-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  background: #faf9f8;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #323130;
+  cursor: pointer;
+}
+
+.layout-edit-card-toolbar__btn:hover {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.layout-edit-card-toolbar__columns {
+  display: inline-flex;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.layout-edit-card-toolbar__col-btn {
+  padding: 6px 12px;
+  border: none;
+  border-right: 1px solid #edebe9;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  color: #605e5c;
+  cursor: pointer;
+}
+
+.layout-edit-card-toolbar__col-btn:last-child {
+  border-right: none;
+}
+
+.layout-edit-card-toolbar__col-btn:hover {
+  background: #f3f2f1;
+}
+
+.layout-edit-card-toolbar__col-btn--active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #323130;
+  font-weight: 600;
+}
+
+.layout-edit-card-toolbar__reset {
+  margin-left: auto;
+  font-size: 12px;
+  color: #0078d4;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 0;
+  font-family: inherit;
+}
+
+.layout-edit-card-toolbar__reset:hover {
+  color: #106ebe;
+}
+
+.layout-edit-card__slot {
+  min-width: 0;
+  height: 100%;
+}
+
+.layout-edit-card__slot > .mda-record-card,
+.layout-edit-card__slot > aside {
+  height: 100%;
+}
+
+.layout-edit-card {
+  position: relative;
+  min-width: 0;
+  overflow: visible;
+  border-radius: 4px;
+  outline: 2px dashed #c8c6c4;
+  outline-offset: 2px;
+  background: rgba(16, 185, 129, 0.04);
+  transition:
+    outline-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.layout-edit-card:hover {
+  outline-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.layout-edit-card--hidden {
+  outline-style: dotted;
+  opacity: 0.55;
+}
+
+.layout-edit-card--dragging {
+  z-index: 3;
+  opacity: 0.95;
+  outline: 2px solid #10b981;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+
+.layout-edit-card--split-target {
+  outline: 2px dashed #10b981;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.layout-edit-card--split-target::after {
+  content: "Drop to split row 50/50";
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: #1e2124;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.layout-edit-card__chrome {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.layout-edit-card__chrome > button,
+.layout-edit-card__chrome .layout-edit-card__columns,
+.layout-edit-card__columns .layout-edit-card__col-btn {
+  pointer-events: auto;
+}
+
+.layout-edit-card__handle,
+.layout-edit-card__visibility,
+.layout-edit-card__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #605e5c;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.layout-edit-card__handle {
+  width: 28px;
+  height: 28px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.layout-edit-card__handle:active {
+  cursor: grabbing;
+}
+
+.layout-edit-card__handle:hover,
+.layout-edit-card__visibility:hover,
+.layout-edit-card__delete:hover {
+  color: #10b981;
+}
+
+.layout-edit-card__visibility,
+.layout-edit-card__delete {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+}
+
+.layout-edit-card__delete {
+  margin-left: auto;
+}
+
+.layout-edit-card__visibility {
+  margin-left: auto;
+}
+
+.layout-edit-card__columns {
+  display: inline-flex;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.layout-edit-card__col-btn {
+  padding: 4px 6px;
+  border: none;
+  border-right: 1px solid #edebe9;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  color: #605e5c;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.layout-edit-card__col-btn:last-child {
+  border-right: none;
+}
+
+.layout-edit-card__col-btn:hover {
+  background: #f3f2f1;
+  color: #10b981;
+}
+
+.layout-edit-card__col-btn--active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #323130;
+}
+
+.layout-edit-card__content {
+  padding-top: 40px;
+  min-width: 0;
+}
+
+.layout-edit-card__content > .mda-record-card,
+.layout-edit-card__content > aside {
+  margin-top: 0;
+  box-shadow: none;
+  border: none;
+}
+
+.mda-detail-record-grid--edit > .layout-edit-card {
+  min-height: 120px;
+}
+
+.mda-record-card--custom {
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+}
+
+.mda-custom-card__header {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid #edebe9;
+}
+
+.mda-custom-card__header--view {
+  padding-bottom: 10px;
+}
+
+.mda-custom-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.mda-custom-card__title-input {
+  width: 100%;
+  max-width: 320px;
+}
+
+.mda-custom-card__body {
+  flex: 1;
+  padding: 12px 16px 16px;
+  min-height: 0;
+}
+
+.mda-custom-card__body.mda-detail-columns {
+  padding: 12px 16px 16px;
+}
+
+.mda-custom-card__body--empty {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+}
+
+.mda-custom-card__empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: #605e5c;
+}
+
+/* --- Grid column edit mode --- */
+
+.layout-grid-edit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 0 10px;
+  border-bottom: 1px solid #edebe9;
+  margin-bottom: 8px;
+}
+
+.layout-grid-edit-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #8a8886;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #323130;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.layout-grid-edit-toolbar__btn:hover:not(:disabled) {
+  background: #f3f2f1;
+}
+
+.layout-grid-edit-toolbar__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.layout-grid-edit-toolbar__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.layout-grid-edit-toolbar__form input,
+.layout-grid-edit-toolbar__select {
+  padding: 4px 8px;
+  border: 1px solid #8a8886;
+  border-radius: 4px;
+  font-size: 13px;
+  min-width: 120px;
+}
+
+.layout-grid-edit-toolbar__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.layout-grid-edit-toolbar__field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #605e5c;
+}
+
+.layout-grid-edit-toolbar__select {
+  min-width: 180px;
+  background: #ffffff;
+}
+
+.layout-grid-edit-toolbar__empty {
+  margin: 0;
+  font-size: 13px;
+  color: #605e5c;
+}
+
+.layout-grid-edit-toolbar__cancel {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: #605e5c;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.layout-grid-edit-toolbar__reset {
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #106ebe;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.layout-grid-edit-toolbar__reset:hover {
+  text-decoration: underline;
+}
+
+.dynamics-view-toolbar__link--active {
+  color: #106ebe;
+  font-weight: 600;
+}
+
+html.layout-grid-edit-mode .dynamics-grid-scroll--list .fui-DataGridHeader .fui-DataGridHeaderCell {
+  overflow: visible;
+}
+
+.layout-edit-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  min-height: 100%;
+  padding: 4px 2px;
+  box-sizing: border-box;
+}
+
+.layout-edit-column--dragging {
+  z-index: 5;
+  opacity: 0.92;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.layout-edit-column__chrome {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.layout-edit-column__handle,
+.layout-edit-column__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #323130;
+  cursor: grab;
+}
+
+.layout-edit-column__handle:active {
+  cursor: grabbing;
+}
+
+.layout-edit-column__delete {
+  cursor: pointer;
+  color: #a4262c;
+  border-color: #e0b4b4;
+}
+
+.layout-edit-column__delete:hover {
+  background: #fdf3f4;
+}
+
+.layout-edit-column__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #323130;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

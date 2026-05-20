@@ -2,14 +2,28 @@ import { EditRegular, CheckmarkRegular } from "@fluentui/react-icons";
 import { useLayoutCustomization } from "./LayoutCustomizationContext.jsx";
 
 export default function EditModeFab() {
-  const { editMode, fieldEditMode, isRecordDetailView, toggleEditMode } = useLayoutCustomization();
+  const { editMode, fieldEditMode, gridEditMode, isRecordDetailView, isListView, toggleEditMode } =
+    useLayoutCustomization();
 
-  const hint =
-    editMode && !isRecordDetailView
-      ? "Open a record to customize form fields"
-      : fieldEditMode
-        ? "Done customizing layout"
-        : "Customize form layout";
+  let hint = "Customize layout";
+  let label = "Customize";
+
+  if (gridEditMode) {
+    hint = "Done customizing columns";
+    label = "Done";
+  } else if (fieldEditMode) {
+    hint = "Done customizing layout";
+    label = "Done";
+  } else if (isListView) {
+    hint = "Customize table columns";
+    label = "Customize";
+  } else if (isRecordDetailView) {
+    hint = "Customize cards and fields";
+    label = "Customize";
+  } else if (editMode) {
+    hint = "Open a list or record to customize layout";
+    label = "Done";
+  }
 
   return (
     <button
@@ -23,7 +37,7 @@ export default function EditModeFab() {
       <span className="layout-edit-fab__icon" aria-hidden="true">
         {editMode ? <CheckmarkRegular /> : <EditRegular />}
       </span>
-      <span>{editMode ? "Done" : "Customize"}</span>
+      <span>{label}</span>
     </button>
   );
 }
