@@ -5,9 +5,10 @@ on:
     branches:
       - main
       - Dynamics-Prototype-Cairn-V2
+    paths-ignore:
+      - "docs/**"
   workflow_dispatch:
 
-# Pushes built dist/ to gh-pages (no github-pages environment branch rules).
 permissions:
   contents: write
 
@@ -30,7 +31,22 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to gh-pages branch
+      - name: Publish build to docs folder (branch Pages)
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -r dist/* docs/
+          touch docs/.nojekyll
+
+      - name: Commit docs to this branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git diff --staged --quiet || git commit -m "Deploy site to docs [skip ci]"
+          git push
+
+      - name: Publish build to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
